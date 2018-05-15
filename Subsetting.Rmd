@@ -95,8 +95,14 @@ df
 
 ## Subsetting Operators
 
-```{r}
+1. Given a linear model, e.g., mod <- lm(mpg ~ wt, data = mtcars), extract the residual degrees of freedom. Extract the R squared from the model summary (summary(mod))
 
+```{r}
+mod <- lm(mpg ~ wt, data = mtcars)
+attributes(mod)
+mod$df.residual
+attributes(summary(mod))
+summary(mod)$r.squared
 ```
 
 ## SUbsetting and Assignment
