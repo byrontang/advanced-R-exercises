@@ -82,9 +82,11 @@ get_matrix_diagnal(mtcars)
 6. What does df[is.na(df)] <- 0 do? How does it work?
 
 ```{r}
-# The command would assign all the NA in the df to 0
+# The command would assign 0 to all the NA in the df
+# Note: need to set stringAsFactors = FALSE, otherwise the command would throw an error.
 df <- data.frame(a = c(1, NA, 3),
-                 b = c("x", "y", NA))
+                 b = c("x", "y", NA),
+                 stringsAsFactors = FALSE)
 df
 df[is.na(df)] <- 0
 df
