@@ -105,6 +105,66 @@ attributes(summary(mod))
 summary(mod)$r.squared
 ```
 
-## SUbsetting and Assignment
 
-## Applications
+## SUbsetting and Assignment/ Applications
+
+Notes
+
+```{r}
+grades <- c(1, 2, 2, 3, 1)
+
+info <- data.frame(
+  grade = 3:1,
+  desc = c("Excellent", "Good", "Poor"),
+  fail = c(F, F, T)
+)
+
+# Use match
+id <- match(grades, info$grade)
+info[id, ]
+```
+
+```{r}
+# Using rownames
+rownames(info) <- info$grade
+info[as.character(grades), ]
+```
+
+1. How would you randomly permute the columns of a data frame? (This is an important technique in random forests.) Can you simultaneously permute the rows and columns in one step?
+
+```{r}
+df <- data.frame(x = c(1:5),
+                 y = letters[1:5],
+                 z = tail(LETTERS, 5),
+                 stringsAsFactors = FALSE)
+
+
+df[,sample(colnames(df), 5, replace = TRUE)]
+df[sample(nrow(df), 10, replace = TRUE) ,sample(colnames(df), 5, replace = TRUE)]
+```
+
+2. How would you select a random sample of m rows from a data frame? What if the sample had to be contiguous (i.e., with an initial row, a final row, and every row in between)?
+
+```{r}
+df <- data.frame(x = c(1:20),
+                 y = letters[1:20],
+                 z = tail(LETTERS, 20),
+                 stringsAsFactors = FALSE)
+
+# m must be less than the number of rows in the target data frame
+m <- 5
+initial_row <- sample(nrow(df) - m, 1)
+df[seq(initial_row, initial_row+m-1),]
+```
+
+3. How could you put the columns in a data frame in alphabetical order?
+
+```{r}
+df <- data.frame(k = c(1:5),
+                 a = letters[1:5],
+                 f = tail(LETTERS, 5),
+                 stringsAsFactors = FALSE)
+
+df[order(colnames(df))]
+```
+
