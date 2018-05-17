@@ -108,7 +108,20 @@ summary(mod)$r.squared
 
 ## SUbsetting and Assignment/ Applications
 
-Notes
+Notes: Lookup tables
+
+```{r}
+x <- c("m", "f", "u", "f", "f", "m", "m")
+lookup <- c(m = "Male", f = "Female", u = NA)
+lookup[x]
+```
+
+```{r}
+unname(lookup[x])
+```
+
+
+Notes: Matching and merging
 
 ```{r}
 grades <- c(1, 2, 2, 3, 1)
