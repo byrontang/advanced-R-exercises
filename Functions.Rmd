@@ -1,0 +1,77 @@
+---
+title: "Functions"
+author: "Byron Tang"
+date: "May 19, 2018"
+output: html_document
+---
+
+```{r setup}
+library(pryr)
+```
+
+## Function components
+
+1. What function allows you to tell if an object is a function? What function allows you to tell if a function is a primitive function?
+
+```{r}
+is.function(sum)
+is.primitive(sum)
+is.primitive(summary)
+```
+
+2. This code makes a list of all functions in the base package.
+
+objs <- mget(ls("package:base"), inherits = TRUE)
+funs <- Filter(is.function, objs)
+
+Use it to answer the following questions:
+
+  a. Which base function has the most arguments?
+
+  b. How many base functions have no arguments? What's special about those functions?
+
+  c. How could you adapt the code to find all primitive functions?
+
+```{r}
+objs <- mget(ls("package:base"), inherits = TRUE)
+funs <- Filter(is.function, objs) # 1207 functions
+
+# a
+funs_arg <- sapply(lapply(names(funs), formals), length)
+(most_arg <- names(funs[funs_arg == max(funs_arg)]))
+length(formals(most_arg))
+
+# b
+no_arg <- funs[funs_arg == 0]
+length(no_arg)
+no_arg_primitive <- sapply(no_arg, is.primitive)
+sum(no_arg_primitive)
+## Most of the functions wihtout arguments are primitive
+
+# c
+funs_primitive <- Filter(is.primitive, objs) # 183 primitive functions
+```
+
+3. What are the three important components of a function?
+
+```{r}
+# 1. the body(), the code inside the function.
+# 2. the formals(), the list of arguments which controls how you can call the function.
+# 3. the environment(), the "map" of the location of the function's variables.
+```
+
+4. When does printing a function not show what environment it was created in?
+
+```{r}
+# If the environment isn't displayed, it means that the function was created in the global environment.
+```
+
+## Lexical Scoping
+
+## Every Opration is a function call
+
+## Function arguments
+
+## Sepcial calls
+
+## Return values
