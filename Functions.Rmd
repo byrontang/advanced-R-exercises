@@ -213,7 +213,45 @@ f2 <- function(x = z) {
 f2()
 ```
 
-
 ## Sepcial calls
+
+1. Create a list of all the replacement functions found in the base package. Which ones are primitive functions?
+
+```{r}
+# objs <- mget(ls("package:base"), inherits = TRUE)
+is_replacement <- grepl("<-", names(objs))
+sum(is_replacement) # 56 replacement functions
+funs_replacement <- objs[is_replacement]
+funs_replacement[sapply(funs_replacement, is.primitive)]
+```
+
+2. What are valid names for user-created infix functions?
+
+```{r}
+# All user-created infix functions must start and end with %
+# Ex: %custom%
+```
+
+3. Create an infix xor() operator.
+
+```{r}
+# Borrow the code from the source code of xor
+`%x||%` <- function(x, y) {
+  (x | y) & !(x & y)
+}
+
+TRUE %x||% TRUE == xor(TRUE, TRUE)
+TRUE %x||% FALSE == xor(TRUE, FALSE)
+FALSE %x||% FALSE == xor(FALSE, FALSE)
+```
+
+4. Create infix versions of the set functions intersect(), union(), and setdiff().
+
+```{r}
+
+```
+
+
+5. Create a replacement function that modifies a random location in a vector.
 
 ## Return values
