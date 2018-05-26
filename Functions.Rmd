@@ -421,7 +421,25 @@ capture.output2 <- function(code) {
 
 capture.output2(cat("a", "b", "c", sep = "\n"))
 ## [1] "a" "b" "c"
+
 Compare capture.output() to capture.output2(). How do the functions differ? What features have I removed to make the key ideas easier to see? How have I rewritten the key ideas to be easier to understand?
+
+```{r}
+# The input of capture.outpu2() is much more limited. For example:
+# capture.output2 only accepts does not accept a file link nor a list object
+
+# The features removed include:
+  # write output into the file
+  # append output into a file
+  # capture output from a list
+
+# The simplified codes in capture.output2 show how capture.output opens
+# a file in the function and then close it at the end of function execution by
+# replacing a file link as a temp file and removing the temp file
+# instead of closing the file passed into the function.
+
+```
+
 
 ```{r}
 capture.output2 <- function(code) {
@@ -434,12 +452,11 @@ capture.output2 <- function(code) {
   force(code)
   readLines(temp)
 }
-
-capture.output2(cat("a", "b", "c", sep = "\n"))
 ```
 
 ```{r}
 capture.output(cat("a", "b", "c", sep = "\n"))
+capture.output2(cat("a", "b", "c", sep = "\n"))
 ```
 
 
@@ -447,3 +464,4 @@ capture.output(cat("a", "b", "c", sep = "\n"))
 capture.output
 ```
 
+Reference to more input/output functions: https://www.statmethods.net/interface/io.html
