@@ -1,0 +1,184 @@
+---
+title: "OO Field Guide"
+author: "Byron Tang"
+date: "May 26, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+```
+
+## S3
+
+Note:
+
+- To determine if a function is an S3 generic, you can inspect its source code for a call to UseMethod()
+
+- You can see all the methods that belong to a generic with methods()
+
+- The underlying codes for the outputs (for unknown classes) of generic functions could be inspected in generic.defualt()
+
+- Some S3 generics, like [, sum(), and cbind(), don't call UseMethod() because they are implemented in C. Instead, they call the C functions DispatchGroup() or DispatchOrEval(). Functions that do method dispatch in C code are called internal generics and are documented in ?"internal generic"
+```{r}
+mean
+cat("\n")
+mean.default
+cat("\n")
+sum
+cbind
+```
+
+
+1. Read the source code for t() and t.test() and confirm that t.test() is an S3 generic and not an S3 method. What happens if you create an object with class test and call t() with it?
+
+```{r}
+t
+t.test
+# In the source code of t.test, there's a line of code says UseMethod("t.test"),
+# which means t.test() is an S3 generic and not an S3 method of t().
+
+# In order to let generics t() to call a method for an object with class test,
+# the naming of the method should be t.test, which is used for an existing function.
+# As the result, after another t.test is created, when calling original t.test,
+# it is neccessary to specify stats:: in order to call the function correctly.
+
+t.test <- function(x) "A method"
+t(structure(matrix(1:30, 5, 6), class = "test"))
+
+t.test(1:10, y = c(7:20)) # throws an error
+stats::t.test(1:10, y = c(7:20)) # specify stats package is required.
+```
+
+2. What classes have a method for the Math group generic in base R? Read the source code. How do the methods work?
+
+```{r}
+# data.frame, Date, difftime, factor, and POSIXt
+methods(Math)
+
+Math
+# Math() calls standardGeneric("Math")
+# standardGeneric dispatches the method defined for a generic function, 
+# using the actual arguments in the frame from which it is called.
+```
+
+3. R has two classes for representing date time data, POSIXct and POSIXlt, which both inherit from POSIXt. Which generics have different behaviours for the two classes? Which generics share the same behaviour?
+
+```{r}
+POSIXct_generics <- gsub(".POSIXct", "", as.vector(methods(class = "POSIXct")))
+POSIXlt_generics <- gsub(".POSIXlt", "", as.vector(methods(class = "POSIXlt")))
+
+cat("Different behaviours for the two classes: \n")
+union(setdiff(POSIXct_generics, POSIXlt_generics), setdiff(POSIXlt_generics, POSIXct_generics))
+cat("\n Same behaviours for the two classes: \n")
+intersect(POSIXct_generics, POSIXlt_generics)
+```
+
+4. Which base generic has the greatest number of defined methods?
+
+```{r}
+ftype(cbind)
+ftype(sum)
+ftype(mean)
+```
+
+
+```{r}
+# get all the base generics
+objs <- mget(ls("package:base"), inherits = TRUE)
+is_generic <- grepl("generic", sapply(objs, ftype))
+# is_generic <- grepl("UseMethod", objs) # incomplete list, only includes S3 generic
+funs_generic <- objs[is_generic]
+method_list <- lapply(names(funs_generic), methods)
+
+having_most_methods <- funs_generic[sapply(method_list, length) == max(sapply(method_list, length))]
+having_most_methods
+cat("Number of methods: \n")
+length(methods(names(having_most_methods)))
+```
+
+5. UseMethod() calls methods in a special way. Predict what the following code will return, then run it and read the help for UseMethod() to figure out what's going on. Write down the rules in the simplest form possible.
+
+y <- 1
+g <- function(x) {
+  y <- 2
+  UseMethod("g")
+}
+g.numeric <- function(x) y
+g(10)
+
+h <- function(x) {
+  x <- 10
+  UseMethod("h")
+}
+h.character <- function(x) paste("char", x)
+h.numeric <- function(x) paste("num", x)
+
+h("a")
+
+```{r}
+# The code creates two generic funtions, g() and h(), and methods for each generic.
+# One method of g() is created for numeric objects,
+# and two medhos of f() are created for character and numeric objects.
+
+y <- 1
+g <- function(x) {
+  y <- 2
+  UseMethod("g")
+}
+g.numeric <- function(x) y
+g(10)
+
+h <- function(x) {
+  x <- 10
+  UseMethod("h")
+}
+h.character <- function(x) paste("char", x)
+h.numeric <- function(x) paste("num", x)
+
+h("a")
+h(2)
+h(TRUE)
+```
+
+6. Internal generics don't dispatch on the implicit class of base types. Carefully read ?"internal generic" to determine why the length of f and g is different in the example below. What function helps distinguish between the behaviour of f and g?
+
+f <- function() 1
+g <- function() 2
+class(g) <- "function"
+
+class(f)
+class(g)
+
+length.function <- function(x) "function"
+length(f)
+length(g)
+
+```{r}
+# The class of f is implicit while the class of g is explicitly assigned.
+# Therefore, althought both f and g have the class of funciton,
+# passing f to length(), a primitive generic function, 
+# would not dispatch a method, but
+# passing g to length() would dispatch length.function() 
+
+f <- function() 1
+g <- function() 2
+class(g) <- "function"
+
+class(f)
+class(g)
+
+length.function <- function(x) "function"
+length(f)
+length(g)
+```
+
+```{r}
+ftype(length)
+```
+
+## S4
+
+## RC
+
+## Picking a system
