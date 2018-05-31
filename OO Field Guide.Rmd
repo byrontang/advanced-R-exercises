@@ -23,6 +23,8 @@ Note:
 
 - Some S3 generics, like [, sum(), and cbind(), don't call UseMethod() because they are implemented in C. Instead, they call the C functions DispatchGroup() or DispatchOrEval(). Functions that do method dispatch in C code are called internal generics and are documented in ?"internal generic"
 
+Additional Materials: https://www.cyclismo.org/tutorial/R/s3Classes.html
+
 ```{r}
 cat("Generic mean:\n")
 mean
@@ -100,13 +102,12 @@ objs <- mget(ls("package:base"), inherits = TRUE)
 is_generic <- grepl("generic", sapply(objs, ftype))
 # is_generic <- grepl("UseMethod", objs) # incomplete list, only includes S3 generic
 funs_generic <- objs[is_generic]
-method_list <- lapply(names(funs_generic), methods)
-
-cat("Generic with most methods: \n")
-having_most_methods <- funs_generic[sapply(method_list, length) == max(sapply(method_list, length))]
-having_most_methods
-cat("Number of methods: \n")
-length(methods(names(having_most_methods)))
+S3_methods_list <- lapply(names(funs_generic), methods)
+most_S3_methods <- funs_generic[sapply(S3_methods_list, length) == max(sapply(S3_methods_list, length))]
+cat("S3 generic with most methods: \n")
+names(most_S3_methods)
+cat("\nNumber of methods: \n")
+length(methods(names(most_S3_methods)))
 ```
 
 5. UseMethod() calls methods in a special way. Predict what the following code will return, then run it and read the help for UseMethod() to figure out what's going on. Write down the rules in the simplest form possible.
@@ -189,6 +190,86 @@ ftype(length)
 ```
 
 ## S4
+
+Notes:
+
+You can get a list of all S4 generics with getGenerics(), and a list of all S4 classes with getClasses(). This list includes shim classes for S3 classes and base types. You can list all S4 methods with showMethods(), optionally restricting selection either by generic or by class (or both). It's also a good idea to supply where = search() to restrict the search to methods available in the global environment.
+
+Additional Materials: 
+https://www.cyclismo.org/tutorial/R/s4Classes.html
+https://www.coursera.org/learn/bioconductor/lecture/N1xBf/r-s4-classes
+
+```{r}
+library(stats4)
+library(methods)
+# getGenerics()
+# getClasses()
+
+# get help for function
+help(mle)
+
+# Get help for S4 class
+class?mle
+```
+
+1. Which S4 generic has the most methods defined for it? Which S4 class has the most methods associated with it?
+
+```{r}
+# All S4 related code is stored in the methods package.
+methods_objs <- mget(ls("package:methods"), inherits = TRUE)
+is_S4 <- sapply(methods_objs, isS4)
+S4_generics <- methods_objs[is_S4]
+S4_methods_list <- lapply(names(S4_generics), .S4methods)
+most_S4_methods <- 
+  S4_generics[sapply(S4_methods_list, length) == 
+                max(sapply(S4_methods_list, length))]
+
+cat("S4 generic with most methods: \n")
+names(most_S4_methods)
+cat("\nNumber of methods: \n")
+length(methods(names(most_S4_methods)))
+```
+
+The below chunk of code uses this webpage as reference: (https://bookdown.org/Tazinho/Advanced-R-Solutions/oo-field-guide.html) 
+
+```{r}
+all_classes <- getClasses(inherits = TRUE)
+class <- all_classes[1]
+
+countMethods <- function(class){
+  methods <- showMethods(classes = class, printTo = FALSE)
+  sum(grepl("Function", methods))
+}
+
+all_Methods_count <- sapply(all_classes, countMethods)
+S4Class_most_Method <- all_classes[all_Methods_count == max(all_Methods_count)]
+message("S4 class has the most methods: ", S4Class_most_Method,
+        "\nNumber of methods: ", countMethods(S4Class_most_Method))
+```
+
+2. What happens if you define a new S4 class that doesn't "contain" an existing class? (Hint: read about virtual classes in ?setClass.)
+
+```{r, echo=FALSE}
+message(
+  "A virtual class would be created when the contain argument is not supplied. No actual objects can be created from the virtual classes. A virtual class may include slots to provide some common behavior without fully defining the object. Note that 'VIRTUAL' does not carry over to subclasses; a class that contains a virtual class is not itself automatically virtual."
+)
+```
+
+3. What happens if you pass an S4 object to an S3 generic? What happens if you pass an S3 object to an S4 generic? (Hint: read ?setOldClass for the second case.)
+
+
+
+```{r}
+message(
+  "S4 classes can be used for any S3 method selection; when an S4 object is detected, S3 method selection uses the contents of extends(class(x)) as the equivalent of the S3 inheritance (the inheritance is cached after the first call). An existing S3 method may not behave as desired for an S4 subclass, in which case utilities such as asS3 and S3Part may be useful. If the S3 method fails on the S4 object, asS3(x) may be passed instead; if the object returned by the S3 method needs to be incorporated in the S4 object, the replacement function for S3Part may be useful, as in the method for class 'myFrame' in the examples.
+  
+S3 classes can be used for any S4 method selection, provided that the S3 classes have been registered by a call to setOldClass, with that call specifying the correct S3 inheritance pattern. A call to setOldClass creates formal classes corresponding to S3 classes, allows these to be used as slots in other classes or in a signature in setMethod, and mimics the S3 inheritance. 
+
+Reference: 
+https://www.rdocumentation.org/packages/methods/versions/3.3.1/topics/Methods
+https://www.rdocumentation.org/packages/methods/versions/3.3.1/topics/setOldClass"
+)
+```
 
 ## RC
 
