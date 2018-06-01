@@ -273,4 +273,30 @@ https://www.rdocumentation.org/packages/methods/versions/3.3.1/topics/setOldClas
 
 ## RC
 
-## Picking a system
+1. Use a field function to prevent the account balance from being directly manipulated. (Hint: create a "hidden" .balance field, and read the help for the fields argument in setRefClass().)
+
+```{r}
+message("As a related feature, the element in the fields= list supplied to setRefClass can be an accessor function, a function of one argument that returns the field if called with no argument or sets it to the value of the argument otherwise. Accessor functions are used internally and for inter-system interface applications, but not generally recommended as they blur the concept of fields as data within the object.
+        
+A field, say data, can be accessed generally by an expression of the form x$data for any object from the relevant class. In an internal method for this class, the field can be accessed by the name data. A field that is not locked can be set by an expression of the form x$data <- value. Inside an internal method, a field can be assigned by an expression of the form x <<- value. Note the non-local assignment operator. The standard R interpretation of this operator works to assign it in the environment of the object. If the field has an accessor function defined, getting and setting will call that function.
+
+Reference: https://www.rdocumentation.org/packages/methods/versions/3.5.0/topics/ReferenceClasses")
+```
+
+2. I claimed that there aren't any RC classes in base R, but that was a bit of a simplification. Use getClasses() and find which classes extend() from envRefClass. What are the classes used for? (Hint: recall how to look up the documentation for a class.)
+
+```{r}
+ext_classes <- sapply(all_classes, extends)
+from_envRefClass <- grepl("envRefClass", ext_classes)
+ext_classes[from_envRefClass]
+```
+
+```{r}
+message("envRefClass: All reference classes eventually inherit from envRefClass.
+
+refGeneratorSlot: The call to setRefClass defines the specified class and returns a 'generator function' object for that class.
+
+localRefClass: Local reference classes are modified ReferenceClasses that isolate the objects to the local frame. Therefore, they do not propagate changes back to the calling environment. At the same time, they use the reference field semantics locally, avoiding the automatic duplication applied to standard R objects.
+")
+```
+
