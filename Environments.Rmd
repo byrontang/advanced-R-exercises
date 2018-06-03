@@ -1,0 +1,59 @@
+---
+title: "Environments"
+author: "Byron Tang"
+date: "June 2, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(pryr)
+```
+
+## Environment basics
+
+1. List three ways in which an environment differs from a list.
+
+```{r, echo=FALSE}
+message("1. Every name in an environment is unique.
+2. The names in an environment are not ordered (i.e., it does not make sense to ask what the first element of an environment is).
+3. An environment has a parent.
+4. Environments have reference semantics.")
+```
+
+2. If you don't supply an explicit environment, where do ls() and rm() look? Where does <- make bindings?
+
+```{r, echo=FALSE}
+message("ls() and rm() default to the current environment if an environment is not specified.
+
+The operators <- assigns into the environment in which they are evaluated.")
+```
+
+3. Using parent.env() and a loop (or a recursive function), verify that the ancestors of globalenv() include baseenv() and emptyenv(). Use the same basic idea to implement your own version of search().
+
+## Recursing over environemnts
+
+```{r}
+search()
+rec_env <- function(env){
+  if (is.null(attr(env, "name"))) {
+    print(env)
+  } else {
+    print(attr(env, "name"))
+  }
+  if (identical(env, baseenv())) 
+    return(emptyenv())
+  return(rec_env(parent.env(env = env)))
+}
+# print(environment())
+rec_env(environment())
+```
+
+## Function environments
+
+```{r}
+
+```
+
+## Binding names to values
+
+## Explicit environments

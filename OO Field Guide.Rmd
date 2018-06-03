@@ -206,10 +206,10 @@ library(methods)
 # getClasses()
 
 # get help for function
-help(mle)
+# help(mle)
 
 # Get help for S4 class
-class?mle
+# class?mle
 ```
 
 1. Which S4 generic has the most methods defined for it? Which S4 class has the most methods associated with it?
@@ -233,7 +233,7 @@ length(methods(names(most_S4_methods)))
 The below chunk of code uses this webpage as reference: (https://bookdown.org/Tazinho/Advanced-R-Solutions/oo-field-guide.html) 
 
 ```{r}
-all_classes <- getClasses(inherits = TRUE)
+all_classes <- getClasses(where = .GlobalEnv, inherits = TRUE)
 class <- all_classes[1]
 
 countMethods <- function(class){
