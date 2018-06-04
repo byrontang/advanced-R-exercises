@@ -48,6 +48,176 @@ rec_env <- function(env){
 rec_env(environment())
 ```
 
+### Recursing over environments
+
+1. Modify where() to find all environments that contain a binding for name.
+
+```{r}
+# Create a new function
+where_new <- function(name, env = parent.frame()) {
+  # A function that is similar to where() but lives in the function
+  # in order to behave differently for objects that exist
+  where_in <- function(name, env) {
+      # success case
+      if (exists(name, envir = env, inherits = FALSE)) {
+        print(env)
+        # base case
+        if (identical(parent.env(env), emptyenv())) {
+          return("End of Search")
+        } else {
+          where_in(name, parent.env(env))
+        }
+      } else {
+        # recursive case
+        if (identical(parent.env(env), emptyenv())) {
+          return("End of Search")
+        } else {
+          where_in(name, parent.env(env))
+        }
+      }
+  }
+  if (!exists(name, envir = env, inherits = TRUE)) {
+    paste("Can't find ", name)
+  } else {
+    where_in(name, env)
+  }
+}
+
+
+```
+
+```{r}
+# Create objects and new environments
+  # global environment
+a <- 1
+
+  # global + 1 level of new env
+e <- new.env()
+e$a <- 2
+
+  # global + 2 levels of new env
+e2 <- new.env(parent = e)
+e2$a <- 3
+
+# Test
+message("Search for 'a' by where function")
+where("a", env = e2)
+message("\nSearch for 'a' by new where function")
+where_new("a", env = e2)
+message("\nSearch for 'b'")
+where_new("b", env = e2)
+```
+
+2. Write your own version of get() using a function written in the style of where().
+
+```{r}
+get_new <- function(name, env = parent.frame()) {
+  if (identical(env, emptyenv())) {
+    # Base case
+    paste("Can't find ", name)
+    
+  } else if (exists(name, envir = env, inherits = FALSE)) {
+    # Success case
+    print(env)
+    .Internal(get(name, env, mode = "any", inherits = FALSE))
+    
+  } else {
+    # Recursive case
+    get_new(name, parent.env(env))
+  }
+}
+```
+
+```{r}
+# Test
+message("Get 'a' with the original get function")
+get("a", env = e2)
+message("\nGet 'a' with the new get function")
+get_new("a", env = e2)
+message("\nTest recursive case in the new get function")
+c <- 10
+get_new("c", env = e2)
+```
+
+
+3. Write a function called fget() that finds only function objects. It should have two arguments, name and env, and should obey the regular scoping rules for functions: if there's an object with a matching name that's not a function, look in the parent. For an added challenge, also add an inherits argument which controls whether the function recurses up the parents or only looks in one environment.
+
+```{r}
+# The current fget function has met the criteria of the question
+fget
+```
+
+```{r}
+# Create a new function with an inherits argument
+fget_new <- function (name, env = parent.frame(), inherits = TRUE) 
+{
+    #env <- to_env(env)
+    if (inherits) {
+      if (identical(env, emptyenv())) {
+          stop("Could not find function called ", name, call. = FALSE)
+      }
+      if (exists(name, env, inherits = FALSE) && is.function(env[[name]])) {
+          env[[name]]
+      }
+      else {
+          fget_new(name, parent.env(env))
+      }
+    } else {
+      if (exists(name, env, inherits = FALSE) && is.function(env[[name]])) {
+          env[[name]]
+      }
+      else {
+          paste("Counld not find function called", name)
+      }
+    }
+}
+```
+
+```{r}
+# Test
+fget("sum")
+fget_new("sum")
+fget_new("sum", inherits = FALSE)
+```
+
+4. Write your own version of exists(inherits = FALSE) (Hint: use ls().) Write a recursive version that behaves like exists(inherits = TRUE).
+
+```{r}
+exists_new <- function(name, env = parent.frame(), inherits = FALSE) {
+    if (inherits) {
+      if (identical(env, emptyenv())) {
+          return(FALSE)
+      }
+      if (exists(name, env, inherits = FALSE)) {
+          return(TRUE)
+      }
+      else {
+          exists_new(name, parent.env(env), inherits = TRUE)
+      }
+    } else {
+      if (exists(name, env, inherits = FALSE)) {
+          return(TRUE)
+      }
+      else {
+          return(FALSE)
+      }
+    }
+}
+```
+
+```{r}
+# Test
+exists("c") # Expects TRUE
+exists("sum") # Expects TRUE
+exists("b") # Expects FALSE
+
+exists_new("c") # Expects TRUE
+exists_new("sum") # Expects FALSE
+exists_new("sum", inherits = TRUE) # Expects TRUE
+exists("b", inherits = TRUE) # Expects FALSE
+```
+
+
 ## Function environments
 
 ```{r}
