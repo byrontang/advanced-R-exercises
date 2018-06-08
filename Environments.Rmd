@@ -282,8 +282,20 @@ message("The below graph contains answers for exercise 2 to 4:")
 include_graphics("C:/Users/byron/Documents/GitHub/advanced-R-exercises/FunctionEnvironmentsEx2.png")
 ```
 
-
 5. Write an enhanced version of str() that provides more information about functions. Show where the function was found and what environment it was defined in.
+
+```{r}
+# Original str function
+str(sd)
+str_new <- function(obj) {
+  str(obj)
+  def <- environment(obj)
+  fd <- where(as.character(substitute(obj)))
+  list(defined = def, found = fd)
+}
+str_new(mean)
+
+```
 
 ## Binding names to values
 
