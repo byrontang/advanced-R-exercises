@@ -34,13 +34,19 @@ The operators <- assigns into the environment in which they are evaluated.")
 ## Recursing over environemnts
 
 ```{r}
+message("Use search():")
 search()
+
+message("\nUse recursive function:")
 rec_env <- function(env){
+  # Global environment
   if (is.null(attr(env, "name"))) {
     print(env)
   } else {
+  # Environments created by package
     print(attr(env, "name"))
   }
+  # Empty environment
   if (identical(env, baseenv())) 
     return(emptyenv())
   return(rec_env(parent.env(env = env)))
@@ -83,8 +89,6 @@ where_new <- function(name, env = parent.frame()) {
     where_in(name, env)
   }
 }
-
-
 ```
 
 ```{r}
@@ -299,4 +303,108 @@ str_new(mean)
 
 ## Binding names to values
 
-## Explicit environments
+1. What does this function do? How does it differ from <<- and why might you prefer it?
+
+rebind <- function(name, value, env = parent.frame()) {
+  if (identical(env, emptyenv())) {
+    stop("Can't find ", name, call. = FALSE)
+  } else if (exists(name, envir = env, inherits = FALSE)) {
+    assign(name, value, envir = env)
+  } else {
+    rebind(name, value, parent.env(env))
+  }
+}
+rebind("a", 10)
+   Error: Can't find a
+a <- 5
+rebind("a", 10)
+a
+   [1] 10
+
+```{r}
+message("Unline <<-, rebind function would not create a new object if the object doesn't exist. The function would avoid global variables introducing non-obvious dependencies between functions and thus more desirable then <<-.")
+```
+
+2. Create a version of assign() that will only bind new names, never re-bind old names. Some programming languages only do this, and are known as single assignment languages.
+
+```{r}
+assign_new <- function(x, value, env = parent.frame()){
+  if (exists(x, where = 1, envir = env, inherits = FALSE)){
+    return(paste(x, "already exists."))
+  } else {
+    assign(x, value, envir = env)
+  }
+}
+```
+
+```{r}
+a <- 1
+assign_new("a", 3)
+a
+assign_new("c", 2)
+c
+```
+
+3. Write an assignment function that can do active, delayed, and locked bindings. What might you call it? What arguments should it take? Can you guess which sort of assignment it should do based on the input?
+
+```{r}
+# Create a new function to assgin value with different binding.
+# However, the object the of delayed value has a constant name "dlv"
+assignSpecial <- function(x, value, binding = "locked", env = parent.frame()){
+  if (binding == "locked") { 
+    assign(x, value, envir = env)
+  } else if (binding == "active") {
+    makeActiveBinding(x, value, env = env)
+  } else if (binding == "delayed") {
+    delayedAssign(x, delayed_value, eval.env = env, assign.env = env)
+    return("Assign the delayed value to variable dlv.")
+  }
+}
+```
+
+```{r}
+# test new function
+assignSpecial("a", 1)
+a
+f <- function(){
+  runif(1)
+}
+assignSpecial("b", f, binding = "active")
+b
+b
+assignSpecial("c", binding = "delayed")
+dlv = 123
+c
+```
+
+```{r, echo = FALSE}
+message("To guess the sort of assignment based on the input. Some simple logic is applied in another new assign function, assignSpecialAuto.
+- If the value is missing, use delayed assignment.
+- If the value is given and is a function, use active assignment
+- For the rest cases, use locked assignment.")
+```
+
+```{r}
+assignSpecialAuto <- function(x, value, env = parent.frame()){
+  if (missing(value)) {
+    delayedAssign(x, dv, eval.env = env, assign.env = env)
+    return("Assign the delayed value to variable dv.")
+  } else if (is.function(value)) {
+    makeActiveBinding(x, value, env = env)
+  } else {
+    assign(x, value, envir = env)
+  }
+}
+```
+
+```{r}
+# test new function
+assignSpecialAuto("a1", 5)
+a
+assignSpecialAuto("b1", f)
+b1
+b1
+assignSpecialAuto("c1")
+dv = 135
+c1
+```
