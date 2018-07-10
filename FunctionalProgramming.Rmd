@@ -1,0 +1,139 @@
+---
+title: "Functional Programming"
+author: "Byron Tang"
+date: "July 7, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+```
+
+## Anonymous functions
+
+1. Given a function, like "mean", match.fun() lets you find a function. Given a function, can you find its name? Why doesn't that make sense in R?
+
+```{r, echo=FALSE}
+message("If the function is anonymous, we could not find its name in any way. However, if the function is not anonymous, we'll need to give a function by its 'name' in order to find a name, which seems odd. ")
+```
+
+2. Use lapply() and an anonymous function to find the coefficient of variation (the standard deviation divided by the mean) for all columns in the mtcars dataset.
+
+```{r}
+lapply(mtcars, function(x) sd(x)/mean(x))
+```
+
+
+3. Use integrate() and an anonymous function to find the area under the curve for the following functions. Use Wolfram Alpha to check your answers.
+
+y = x ^ 2 - x, x in [0, 10]
+y = sin(x) + cos(x), x in [-??, ??]
+y = exp(x) / x, x in [10, 20]
+
+```{r}
+integrate(function(x) x ^ 2 - x, 0, 10)
+integrate(function(x) sin(x) + cos(x), -pi, pi)
+integrate(function(x) exp(x) / x, 10, 20)
+```
+
+The answer is double checked with Wolfram Alpha. However, Wolfram Alpha calculated area under x axis as positive, while integrate() count it as negative. Here I use the calculation of integrate as other materials also suggest the area under x asix should be negative. 
+Reference: https://amsi.org.au/ESA_Senior_Years/SeniorTopic3/3f/3f_2content_8.html
+
+
+## Closures
+
+1. Why are functions created by other functions called closures?
+
+```{r, echo=FALSE}
+message("Closures get their name because they 'enclose' the environment of the parent function and can access all its variables.")
+```
+
+2. What does the following statistical function do? What would be a better name for it? (The existing name is a bit of a hint.)
+
+bc <- function(lambda) {
+  if (lambda == 0) {
+    function(x) log(x)
+  } else {
+    function(x) (x ^ lambda - 1) / lambda
+  }
+}
+
+```{r, echo=FALSE}
+message("The function is Box-Cox transformation:
+https://en.wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation
+
+A name that is more informatinve, like BCTransform,  would be better.")
+```
+
+3. What does approxfun() do? What does it return?
+
+```{r, echo=FALSE}
+message("The function approxfun() returns a function performing (linear or constant) interpolation of the given data points. For a given set of x values, this function will return the corresponding interpolated values. It uses data stored in its environment when it was created, the details of which are subject to change.")
+```
+
+4. What does ecdf() do? What does it return?
+
+```{r}
+message("Compute an empirical cumulative distribution function, with several methods for plotting, printing and computing with such an 'ecdf' object. The function ecdf() returns an ecdf project, which is also a function.\n")
+x <- rnorm(12)
+Fn <- ecdf(x)
+Fn     # a *function*
+message("\nClass of Fn: ")
+class(Fn)
+```
+
+5. Create a function that creates functions that compute the ith central moment of a numeric vector. You can test it by running the following code:
+
+m1 <- moment(1)
+m2 <- moment(2)
+
+x <- runif(100)
+stopifnot(all.equal(m1(x), 0))
+stopifnot(all.equal(m2(x), var(x) * 99 / 100))
+
+```{r}
+# Create the function
+moment <- function(m){
+  function(x){
+    mean((x - mean(x)) ^ m)
+  }
+}
+```
+
+The fucntion successfully passed the tests.
+
+```{r}
+# Test
+m1 <- moment(1)
+m2 <- moment(2)
+
+x <- runif(100)
+stopifnot(all.equal(m1(x), 0))
+stopifnot(all.equal(m2(x), var(x) * 99 / 100))
+```
+
+6. Create a function pick() that takes an index, i, as an argument and returns a function with an argument x that subsets x with i.
+
+lapply(mtcars, pick(5))
+- # should do the same as this
+lapply(mtcars, function(x) x[[5]])
+
+```{r}
+# Create the function
+pick <- function(i){
+  function(x){
+    len <- length(x)
+    stopifnot(i <= len)
+    x[[i]]
+  }
+}
+```
+
+```{r}
+# Test the function
+identical(lapply(mtcars, pick(5)), lapply(mtcars, function(x) x[[5]]))
+```
+
+## List of functions
+
+## Case study: numerical integration
