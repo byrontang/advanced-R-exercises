@@ -136,4 +136,75 @@ identical(lapply(mtcars, pick(5)), lapply(mtcars, function(x) x[[5]]))
 
 ## List of functions
 
+1. Implement a summary function that works like base::summary(), but uses a list of functions. Modify the function so it returns a closure, making it possible to use it as a function factory.
+
+```{r}
+# Create the funciton (for numeric inputs only)
+summary2 <- function(v){
+
+  functions <- list(
+    Min = function(x) min(x),
+    Qu_1st = function(x) quantile(x, .25),
+    Median = function(x) median(x),
+    Mean = function(x) mean(x),
+    Qu_3rd = function(x) quantile(x, .75),
+    Max = function(x) max(x)
+    )
+ 
+  if (!is.data.frame(v)){
+    df <- data.frame(lapply(functions,
+                            function(f) format(round(f(v), 2), nsmall = 2)),
+                     stringsAsFactors = FALSE)
+    row.names(df) <- deparse(substitute(v))
+  } else if(is.data.frame(v)){
+    df <- data.frame(lapply(functions,
+                            function(f) format(lapply(mtcars, f))),
+                     stringsAsFactors = FALSE)
+  }
+  t(round(data.matrix(df, rownames.force = NA), 2))
+}
+
+summary2(mtcars$mpg)
+summary2(mtcars)
+```
+
+```{r}
+# Function Factory
+# The behavior of the new function is different from summary2()
+# when taking in a data frame as input
+summary_fac <- function(f){
+
+  functions <- list(
+    Min = function(x) min(x),
+    Qu_1st = function(x) quantile(x, .25),
+    Median = function(x) median(x),
+    Mean = function(x) mean(data.matrix(x)),
+    Qu_3rd = function(x) quantile(x, .75),
+    Max = function(x) max(x)
+    )
+  f <- functions[[f]]
+}
+
+fun_names <- c("Min", "Max", "Mean")
+funcs <- lapply(setNames(fun_names, fun_names), summary_fac)
+with(funcs, paste0("Min: ", Min(mtcars$mpg), 
+                   "; Max: ", Max(mtcars$mpg), 
+                   "; Mean: ", Mean(mtcars$mpg)))
+with(funcs, paste0("Min: ", Min(mtcars), 
+                   "; Max: ", Max(mtcars), 
+                   "; Mean: ", Mean(mtcars)))
+```
+
+2. Which of the following commands is equivalent to with(x, f(z))?
+
+x$f(x$z).
+f(x$z).
+x$f(z).
+f(z).
+It depends.
+
+```{r, echo=FALSE}
+message("x$f(z)")
+```
+
 ## Case study: numerical integration
