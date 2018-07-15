@@ -213,9 +213,7 @@ message("x$f(z)")
 
 ```{r}
 # Create function
-integrationFuns <- function(f, a, b, n = 10, rule = "midpoint", 
-                            coef = c(7, 32, 12, 32, 7), 
-                            open = FALSE){
+integrationFuns <- function(f, a, b, n = 10, rule = "midpoint", open = FALSE){
   
   # Create a closure of Newton-cotes
   newton_cotes <- function(coef, open = FALSE) {
@@ -233,8 +231,8 @@ integrationFuns <- function(f, a, b, n = 10, rule = "midpoint",
     midpoint <- function(f, a, b) (b - a) * f((a + b) / 2),
     trapezoid <- function(f, a, b) (b - a) / 2 * (f(a) + f(b)),
     simpson <- function(f, a, b) (b - a) / 6 * (f(a) + 4 * f((a + b) / 2) + f(b)),
-    boole <- newton_cotes(coef = coef, open = open),
-    milne <- newton_cotes(coef = coef, open = open)
+    boole <- newton_cotes(coef = c(7, 32, 12, 32, 7), open = open),
+    milne <- newton_cotes(coef = c(2, -1, 2), open = open)
   )
   names(functions) <- c("midpoint", "trapezoid", "simpson", "boole", "milne")
   
@@ -252,12 +250,48 @@ message("Default to midpoint: ", integrationFuns(sin, 0, pi))
 sapply(c("trapezoid", "simpson", "boole"), 
        function(x) integrationFuns(sin, 0, pi, rule = x))
 message("milne: ", 
-        integrationFuns(sin, 0, pi, rule = "milne", 
-                        coef = c(2, -1, 2), open = TRUE))
+        integrationFuns(sin, 0, pi, rule = "milne", open = TRUE))
 ```
+
+Reference: https://en.wikipedia.org/wiki/Newton%E2%80%93Cotes_formulas
 
 2. The trade-off between integration rules is that more complex rules are slower to compute, but need fewer pieces. For sin() in the range [0, ??], determine the number of pieces needed so that each rule will be equally accurate. Illustrate your results with a graph. How do they change for different functions? sin(1 / x^2) is particularly challenging.
 
 ```{r}
+# Create the function
+integrationFuns2 <- function(f, a, b, n = 100, accu = 5, increment = 1) {
+  check = FALSE
+  
+  # Use the output of integrate as the benchmark of accuracy
+  trueValue <- integrate(f = f, lower = a, upper = b)
+  
+  while (check == FALSE){
+    allValue <- sapply(c("midpoint", "trapezoid", "simpson", "boole", "milne"),
+       function(x) integrationFuns(f = f, a = a, b = b, n = n, rule = x))
+    
+    # Caculate accuracy to the nth decimal point (default to 5)
+    compValue <- round(allValue - trueValue$value, accu)
+    
+    check <- all(compValue[1] == compValue)
+    n = n + increment
+  }
 
+  list("TrueValue" = trueValue, 
+       "FinalValues" = format(round(allValue, accu), nsmall = accu), 
+       "Accuracy at decimal point" = accu, 
+       "Accurate" = check, 
+       "Pieces" = n)
+
+}
+
+# Test the functions 
+integrationFuns2(sin, 0, pi)
 ```
+
+```{r}
+# Test sin(1 / x^2)
+testF <- function(x) sin(1/x^2)
+integrationFuns2(testF, 1, pi, n = 52500, increment = 10)
+```
+
+Illustration by a graph is skipped at this moment.
