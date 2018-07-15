@@ -208,3 +208,56 @@ message("x$f(z)")
 ```
 
 ## Case study: numerical integration
+
+1. Instead of creating individual functions (e.g., midpoint(), trapezoid(), simpson(), etc.), we could store them in a list. If we did that, how would that change the code? Can you create the list of functions from a list of coefficients for the Newton-Cotes formulae?
+
+```{r}
+# Create function
+integrationFuns <- function(f, a, b, n = 10, rule = "midpoint", 
+                            coef = c(7, 32, 12, 32, 7), 
+                            open = FALSE){
+  
+  # Create a closure of Newton-cotes
+  newton_cotes <- function(coef, open = FALSE) {
+    n <- length(coef) + open
+    function(f, a, b) {
+      pos <- function(i) a + i * (b - a) / n
+      points <- pos(seq.int(0, length(coef) - 1))
+        
+      (b - a) / sum(coef) * sum(f(points) * coef)
+    }
+  }
+  
+  # Create a list of functions
+  functions <- list(
+    midpoint <- function(f, a, b) (b - a) * f((a + b) / 2),
+    trapezoid <- function(f, a, b) (b - a) / 2 * (f(a) + f(b)),
+    simpson <- function(f, a, b) (b - a) / 6 * (f(a) + 4 * f((a + b) / 2) + f(b)),
+    boole <- newton_cotes(coef = coef, open = open),
+    milne <- newton_cotes(coef = coef, open = open)
+  )
+  names(functions) <- c("midpoint", "trapezoid", "simpson", "boole", "milne")
+  
+  # Calculate composite integration
+  points <- seq(a, b, length = n + 1)
+  area <- 0
+  for (i in seq_len(n)) {
+    area <- area + functions[[rule]](f, points[i], points[i + 1])
+  }
+  area
+}
+
+# Test function
+message("Default to midpoint: ", integrationFuns(sin, 0, pi))
+sapply(c("trapezoid", "simpson", "boole"), 
+       function(x) integrationFuns(sin, 0, pi, rule = x))
+message("milne: ", 
+        integrationFuns(sin, 0, pi, rule = "milne", 
+                        coef = c(2, -1, 2), open = TRUE))
+```
+
+2. The trade-off between integration rules is that more complex rules are slower to compute, but need fewer pieces. For sin() in the range [0, ??], determine the number of pieces needed so that each rule will be equally accurate. Illustrate your results with a graph. How do they change for different functions? sin(1 / x^2) is particularly challenging.
+
+```{r}
+
+```
