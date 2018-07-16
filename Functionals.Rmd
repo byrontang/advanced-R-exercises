@@ -1,0 +1,80 @@
+---
+title: "Functionals"
+author: "Byron Tang"
+date: "July 16, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+```
+
+## My first functional: lapply()
+## For loop funcitonals
+
+1. Why are the following two invocations of lapply() equivalent?
+
+trims <- c(0, 0.1, 0.2, 0.5)
+x <- rcauchy(100)
+
+lapply(trims, function(trim) mean(x, trim = trim))
+lapply(trims, mean, x = x)
+
+```{r, echo=FALSE}
+message("In both invocations, the trim argument in mean is supplied by each element in trims while the x argument is constantly the x vector. Therefore, the outputs are the same.")
+```
+
+2. The function below scales a vector so it falls in the range [0, 1]. How would you apply it to every column of a data frame? How would you apply it to every numeric column in a data frame?
+
+scale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+```{r}
+scale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+# Apply the function to every column of a data frame
+
+# Apply to every numeric column in a data frame
+```
+
+3. Use both for loops and lapply() to fit linear models to the mtcars using the formulas stored in this list:
+
+formulas <- list(
+  mpg ~ disp,
+  mpg ~ I(1 / disp),
+  mpg ~ disp + wt,
+  mpg ~ I(1 / disp) + wt
+)
+
+4. Fit the model mpg ~ disp to each of the bootstrap replicates of mtcars in the list below by using a for loop and lapply(). Can you do it without an anonymous function?
+
+bootstraps <- lapply(1:10, function(i) {
+  rows <- sample(1:nrow(mtcars), rep = TRUE)
+  mtcars[rows, ]
+})
+
+5. For each model in the previous two exercises, extract R2 using the function below.
+
+rsq <- function(mod) summary(mod)$r.squared
+
+```{r}
+```
+
+## Data structure functionals
+
+```{r}
+
+```
+
+## FUnctional programming
+
+## Mathematical functionals
+
+## Loops that shouldn't be converted to functions
+
+## A family of functions
