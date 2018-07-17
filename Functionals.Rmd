@@ -38,8 +38,15 @@ scale01 <- function(x) {
 }
 
 # Apply the function to every column of a data frame
+df_num <- data.frame(lapply(mtcars, scale01))
+head(df_num)
 
 # Apply to every numeric column in a data frame
+mtcars2 <- mtcars
+mtcars2$vs <- factor(mtcars2$vs)
+mtcars2$am <- factor(mtcars2$am)
+df_num2 <- data.frame(lapply(mtcars2[sapply(mtcars2, is.numeric)], scale01))
+head(df_num2)
 ```
 
 3. Use both for loops and lapply() to fit linear models to the mtcars using the formulas stored in this list:
@@ -51,6 +58,25 @@ formulas <- list(
   mpg ~ I(1 / disp) + wt
 )
 
+```{r}
+formulas <- list(
+  mpg ~ disp,
+  mpg ~ I(1 / disp),
+  mpg ~ disp + wt,
+  mpg ~ I(1 / disp) + wt
+)
+# For loop
+list_lm <- vector("list", length(formulas))
+for (i in 1:length(formulas)){
+  list_lm[[i]] <- lm(formulas[[i]], data = mtcars)
+}
+lapply(list_lm, function(x) round(x$coefficients, 5))
+
+# lapply
+list_lm2 <- lapply(formulas, function(x) lm(x, data = mtcars))
+lapply(list_lm2, function(x) round(x$coefficients, 5))
+```
+
 4. Fit the model mpg ~ disp to each of the bootstrap replicates of mtcars in the list below by using a for loop and lapply(). Can you do it without an anonymous function?
 
 bootstraps <- lapply(1:10, function(i) {
@@ -58,11 +84,34 @@ bootstraps <- lapply(1:10, function(i) {
   mtcars[rows, ]
 })
 
+```{r}
+# For loop
+list_lm3 <- vector("list", 10)
+for(i in 1:10){
+  rows <- sample(1:nrow(mtcars), rep = TRUE)
+  list_lm3[[i]] <- lm(mpg ~ disp, mtcars[rows, ])
+}
+sapply(list_lm3, function(x) round(x$coefficients, 5))
+
+# Combine all steps into one lapply() function.
+# However, it's unavoidable to use an anonymous function
+# Note: Need to set simplify as FALSE to keep data frame format from replicate()
+list_lm4 <- lapply(replicate(10, mtcars[sample(1:nrow(mtcars), rep = TRUE), ],
+                             simplify = FALSE), 
+                   function(x) lm(mpg ~ disp, data = x))
+sapply(list_lm4, function(x) round(x$coefficients, 5))
+```
+
 5. For each model in the previous two exercises, extract R2 using the function below.
 
 rsq <- function(mod) summary(mod)$r.squared
 
 ```{r}
+rsq <- function(mod) summary(mod)$r.squared
+sapply(list_lm, rsq)
+sapply(list_lm2, rsq)
+sapply(list_lm3, rsq)
+sapply(list_lm4, rsq)
 ```
 
 ## Data structure functionals
