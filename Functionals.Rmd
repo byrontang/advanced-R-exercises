@@ -6,11 +6,10 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-
+library(parallel)
 ```
 
 ## My first functional: lapply()
-## For loop funcitonals
 
 1. Why are the following two invocations of lapply() equivalent?
 
@@ -114,16 +113,211 @@ sapply(list_lm3, rsq)
 sapply(list_lm4, rsq)
 ```
 
-## Data structure functionals
+## For loop funcitonals: friends of lapply()
+
+1. Use vapply() to:
+a. Compute the standard deviation of every column in a numeric data frame.
+b. Compute the standard deviation of every numeric column in a mixed data frame. (Hint: you'll need to use vapply() twice.)
 
 ```{r}
+# a
+vapply(mtcars, sd, numeric(1))
+# b
+vapply(mtcars[, vapply(mtcars2, is.numeric, logical(1))], sd, numeric(1))
+```
+
+2. Why is using sapply() to get the class() of each element in a data frame dangerous?
+
+```{r, echo=FALSE}
+message("The elements in a data frame might not have only one class. When any one of the element has more than one class, sapply would return a list instead of a vector. It might error out thefollowing process or function without clear message if the expected output is a vector.")
+```
+
+3. The following code simulates the performance of a t-test for non-normal data. Use sapply() and an anonymous function to extract the p-value from every trial.
+
+trials <- replicate(
+  100, 
+  t.test(rpois(10, 10), rpois(7, 10)),
+  simplify = FALSE
+)
+Extra challenge: get rid of the anonymous function by using [[ directly.
+
+```{r}
+trials <- replicate(
+  100, 
+  t.test(rpois(10, 10), rpois(7, 10)),
+  simplify = FALSE
+)
+head(sapply(trials, function(x) x$p.value), 10)
+head(unlist(Map(`[[`, trials, "p.value")), 10)
+```
+
+4. What does replicate() do? What sort of for loop does it eliminate? Why do its arguments differ from lapply() and friends?
+
+```{r}
+message("replicate is a wrapper for the common use of sapply for repeated evaluation of an expression (which will usually involve random number generation).
+        
+It eliminates the loop over the numeric indices: for (i in n)
+
+Only replicate has the argument of expr, which is the expression (a language object, usually a call) to evaluate repeatedly.")
 
 ```
 
-## FUnctional programming
+5. Implement a version of lapply() that supplies FUN with both the name and the value of each component.
+
+```{r}
+# Create function
+lapply2 <- function(x1, x2, FUN, ...){
+  out <- vector("list", length(x1))
+  for (i in seq_along(x1)) {
+    out[[i]] <- weighted.mean(x1[[i]], x2[[i]])
+  }
+  out
+}
+xs <- replicate(5, runif(10), simplify = FALSE)
+ws <- replicate(5, rpois(10, 5) + 1, simplify = FALSE)
+
+# Test and check with Map()
+unlist(lapply2(xs, ws, weighted.mean))
+unlist(Map(weighted.mean, xs, ws))
+```
+
+6. Implement a combination of Map() and vapply() to create an lapply() variant that iterates in parallel over all of its inputs and stores its outputs in a vector (or a matrix). What arguments should the function take?
+
+```{r}
+# Create the function
+lapply3 <- function (f, mc.cores = 1L, FUN.VALUE = character(1), ...) 
+{
+	cores <- as.integer(mc.cores)
+	if (cores < 1L) 
+		stop("'mc.cores' must be >= 1")
+	if (cores > 1L) 
+		stop("'mc.cores' > 1 is not supported on Windows")
+	vapply(Map(f, ...), function(x) x, FUN.VALUE = FUN.VALUE)
+}
+
+# Test (mc.core must be exactly 1 on Windows (which uses the master process))
+lapply3(xs, ws, f = weighted.mean, mc.cores = 1L, FUN.VALUE = numeric(1))
+```
+
+7. Implement mcsapply(), a multicore version of sapply(). Can you implement mcvapply(), a parallel version of vapply()? Why or why not?
+
+```{r}
+# Create function mcsapply
+mcsapply <- function (X, FUN, ..., mc.preschedule = TRUE, mc.set.seed = TRUE, 
+	mc.silent = FALSE, mc.cores = 1L, mc.cleanup = TRUE, mc.allow.recursive = TRUE, 
+	affinity.list = NULL) 
+{
+	cores <- as.integer(mc.cores)
+	if (cores < 1L) 
+		stop("'mc.cores' must be >= 1")
+	if (cores > 1L) 
+		stop("'mc.cores' > 1 is not supported on Windows")
+	sapply(X, FUN, ...)
+}
+
+# Test
+mcsapply(mtcars, mean)
+```
+```{r}
+# Technically we could also create mcvapply
+# However, my test case is limited to windows.
+mcvapply <- function (X, FUN, ..., mc.preschedule = TRUE, mc.set.seed = TRUE, 
+	mc.silent = FALSE, mc.cores = 1L, mc.cleanup = TRUE, mc.allow.recursive = TRUE, 
+	affinity.list = NULL) 
+{
+	cores <- as.integer(mc.cores)
+	if (cores < 1L) 
+		stop("'mc.cores' must be >= 1")
+	if (cores > 1L) 
+		stop("'mc.cores' > 1 is not supported on Windows")
+	vapply(X, FUN, ...)
+}
+
+mcvapply(mtcars, class, character(1))
+```
+
+## Manipulating matrices and data frames
+
+1. How does apply() arrange the output? Read the documentation and perform some experiments.
+
+```{r, echo=FALSE}
+message("If each call to FUN returns a vector of length n, then apply returns an array of dimension c(n, dim(X)[MARGIN]) if n > 1. If n equals 1, apply returns a vector if MARGIN has length 1 and an array of dimension dim(X)[MARGIN] otherwise. If n is 0, the result has length 0 but not necessarily the 'correct' dimension.
+
+If the calls to FUN return vectors of different lengths, apply returns a list of length prod(dim(X)[MARGIN]) with dim set to MARGIN if this has length greater than one.")
+```
+
+```{r}
+# When n > 1, return an array of dimension c(n, dim(X)[MARGIN])
+dim(apply(mtcars, 2, function(x) c(mean(x), median(x))))
+
+# When n = 1, return a vector (no dimension)
+dim(apply(mtcars, 2, mean))
+
+# When n = 0, the result has length 0
+length(apply(mtcars, 2, function(x) NULL))
+
+# When returning vectors of different lengths 
+# (example from R documentation)
+z <- array(1:24, dim = 2:4)
+zseq <- apply(z, 1:2, function(x) seq_len(max(x)))
+apply(z, 3, function(x) seq_len(max(x)))
+```
+
+2. There's no equivalent to split() + vapply(). Should there be? When would it be useful? Implement one yourself.
+
+```{r, warning=FALSE}
+message("There should be a equivalent function of split() + vapply() as it could be useful when this kind of function needs to always generate desirable outputs in cases such as implemention in another function.\n")
+
+# tapply throughs an error when one of the output has lenght zero
+pulse <- c(round(rnorm(22, 70, 10 / 3)) + rep(c(0, 5), c(10, 12)), NULL)
+group <- c(rep(c("A", "B"), c(10, 12)), "C")
+try(tapply(pulse, group, length))
+
+# Implement split() + vapply() (warning is muted)
+tapply2 <- function(x, group, f, FUN.VALUE, ...) {
+  pieces <- split(x, group)
+  vapply(pieces, f, FUN.VALUE)
+}
+tapply2(pulse, group, length, numeric(1))
+```
+
+3. Implement a pure R version of split(). (Hint: use unique() and subsetting.) Can you do it without a for loop?
+
+```{r}
+# Create the function
+split2 <- function(x, group){
+  g <- unique(group)
+  out <- lapply(g, function(g) x[group == g])
+  setNames(out, g)
+}
+
+# Test
+pulse <- c(round(rnorm(22, 70, 10 / 3)) + rep(c(0, 5), c(10, 12)))
+group <- c(rep(c("A", "B"), c(10, 12)))
+split2(pulse, group)
+```
+
+4. What other types of input and output are missing? Brainstorm before you look up some answers in the plyr paper.
+
+Reference:
+The Split-Apply-Combine Strategy for Data Analysis (https://www.jstatsoft.org/article/view/v040i01)
+
+```{r}
+message("Output: Discarded (*_ply)
+
+Sometimes it is convenient to operate on a list purely for the side eects, e.g., plots, caching,
+and output to screen/le. In this case *_ply is a little more ecient than abandoning the
+output of *lply because it does not store the intermediate results.
+The *_ply functions have one additional argument, .print, which controls whether or not
+each result should be printed. This is useful when working with lattice (Sarkar 2008) or
+ggplot2 (Wickham 2010) graphics.")
+
+```
+
+## Manipulating lists
 
 ## Mathematical functionals
 
-## Loops that shouldn't be converted to functions
+## Loops that shouldn be left as is
 
 ## A family of functions
