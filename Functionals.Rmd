@@ -316,6 +316,92 @@ ggplot2 (Wickham 2010) graphics.")
 
 ## Manipulating lists
 
+1. Why isn't is.na() a predicate function? What base R function is closest to being a predicate version of is.na()?
+
+```{r}
+message("is.na() doesn't return a single TRUE or FALSE")
+list_test <-
+  list(a = c(1:5),
+       b = replicate(5, NA))
+message("To return a single TRUE or FALSE, one option is to combine all() and is.na() from base R functions.")
+sapply(list_test, function(x) all(is.na(x)))
+```
+
+2. Use Filter() and vapply() to create a function that applies a summary statistic to every numeric column in a data frame.
+
+```{r}
+# Create new funciton
+summary2 <- function(df){
+  vapply(Filter(is.numeric, df), summary, FUN.VALUE = numeric(6))
+}
+
+# Test (vs and am are factors)
+summary2(mtcars2)
+```
+
+3. What's the relationship between which() and Position()? What's the relationship between where() and Filter()?
+
+```{r}
+message("Position() is equivalent to:
+
+  function(x) which(x)[1]
+
+which() returns the opsition of all the lements that match the predicate, while Position() returns the position of the first element that matches the predicate (or the last element if right = TRUE).
+        
+Filter() could be considered as: 
+
+  function(f, x) x[where(f, x)]
+
+where() returns a logical vector of TRUE and FALSE indicating whether the element matchs the preicate , but Filter() selects those elements which match the predicate.")
+```
+
+4. Implement Any(), a function that takes a list and a predicate function, and returns TRUE if the predicate function returns TRUE for any of the inputs. Implement All() similarly.
+
+```{r}
+Any <- function(f, x){
+  any(where(f, x))
+}
+All <- function(f, x){
+  all(where(f, x))
+}
+
+Any(is.numeric, mtcars2)
+All(is.numeric, mtcars2)
+All(is.numeric, mtcars)
+```
+
+5. Implement the span() function from Haskell: given a list x and a predicate function f, span returns the location of the longest sequential run of elements where the predicate is true. (Hint: you might find rle() helpful.)
+
+```{r}
+# Create the function
+span <- function(f, x){
+  y <- unname(vapply(x, f, logical(1)))
+  sq <- rle(y)
+  lengthsTrue <- sq$lengths[sq$values]
+  positions <- cumsum(sq$lengths)
+  positionsTrue <- positions[sq$values]
+  longest_seq <- max(lengthsTrue)
+  longest_position <- Position(function(x) x == longest_seq, lengthsTrue)
+  # senario 1
+  if (longest_position == 1 & sq$values[1]){
+    starting <- 1
+  # senario 2
+  } else if (longest_position == 1 & !sq$values[1]) {
+    starting <- positionsTrue[1] - 1
+  # senario 3
+  } else {
+    starting <- positionsTrue[longest_position - 1] + 1
+  }
+  return(seq(starting, starting + longest_seq - 1))
+}
+
+# Test
+vapply(mtcars2, is.factor, logical(1))
+span(is.numeric, mtcars2) # senario 1
+span(is.factor, mtcars2) # senario 2
+span(is.numeric, mtcars2[c("qsec", "vs", "am", "gear", "carb")]) # senario 3
+```
+
 ## Mathematical functionals
 
 ## Loops that shouldn be left as is
