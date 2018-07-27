@@ -404,6 +404,31 @@ span(is.numeric, mtcars2[c("qsec", "vs", "am", "gear", "carb")]) # senario 3
 
 ## Mathematical functionals
 
+Reference for the negative log likelihood (NLL) closure in the lecture:
+https://www.statlect.com/fundamentals-of-statistics/Poisson-distribution-maximum-likelihood
+
+1. Implement arg_max(). It should take a function and a vector of inputs, and return the elements of the input where the function returns the highest value. For example, arg_max(-10:5, function(x) x ^ 2) should return -10. arg_max(-5:5, function(x) x ^ 2) should return c(-5, 5). Also implement the matching arg_min() function.
+
+```{r}
+# Create the function
+arg_max <- function(vec, fun) {
+  out <- sapply(vec, fun)
+  vec[out == max(out)]
+}
+
+# Test
+arg_max(-10:5, function(x) x ^ 2)
+arg_max(-5:5, function(x) x ^ 2)
+
+# To create arg_min(), simply change max() into min() inside the arg_max function.
+```
+
+2. Challenge: read about the fixed point algorithm (http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-12.html#%_sec_1.3). Complete the exercises using R.
+
+```{r echo=FALSE}
+message("Link doesn't work.")
+```
+
 ## Loops that shouldn be left as is
 
 ## A family of functions
