@@ -358,6 +358,9 @@ where() returns a logical vector of TRUE and FALSE indicating whether the elemen
 4. Implement Any(), a function that takes a list and a predicate function, and returns TRUE if the predicate function returns TRUE for any of the inputs. Implement All() similarly.
 
 ```{r}
+where <- function(f, x) {
+  vapply(x, f, logical(1))
+}
 Any <- function(f, x){
   any(where(f, x))
 }
@@ -429,6 +432,199 @@ arg_max(-5:5, function(x) x ^ 2)
 message("Link doesn't work.")
 ```
 
-## Loops that shouldn be left as is
+## Case study
 
-## A family of functions
+1. Implement smaller and larger functions that, given two inputs, return either the smaller or the larger value. Implement na.rm = TRUE: what should the identity be? (Hint: smaller(x, smaller(NA, NA, na.rm = TRUE), na.rm = TRUE) must be x, so smaller(NA, NA, na.rm = TRUE) must be bigger than any other value of x.) Use smaller and larger to implement equivalents of min(), max(), pmin(), pmax(), and new functions row_min() and row_max().
+
+```{r}
+# Create function for na.rm
+rm_na <- function(x, y, identity) {
+  if (is.na(x) && is.na(y)) {
+    identity
+  } else if (is.na(x)) {
+    y
+  } else {
+    x
+  }
+}
+
+# Create new function smaller() (equivalent of min)
+smaller <- function(x, y, na.rm = FALSE) {
+  stopifnot(length(x) == 1, length(y) == 1)
+  if (na.rm && (is.na(x) || is.na(y))) 
+    rm_na(x, y, NA)
+  else if (is.na(x) || is.na(y))
+    NA
+  else if (x > y)
+    y
+  else
+    x
+}
+
+# Test smaller 
+smaller(1, 2)
+smaller(2, NA)
+smaller(2, NA, na.rm = TRUE)
+smaller(NA, NA, na.rm = TRUE)
+smaller(1, smaller(NA, NA, na.rm = TRUE), na.rm = TRUE)
+
+# Create new function larger() (equivalent of max)
+larger <- function(x, y, na.rm = FALSE) {
+  stopifnot(length(x) == 1, length(y) == 1)
+  if (na.rm && (is.na(x) || is.na(y))) 
+    rm_na(x, y, NA)
+  else if (is.na(x) || is.na(y))
+    NA
+  else if (x > y)
+    x
+  else
+    y
+}
+
+# Test larger 
+larger(1, 2)
+larger(2, NA)
+larger(2, NA, na.rm = TRUE)
+larger(NA, NA, na.rm = TRUE)
+larger(1, larger(NA, NA, na.rm = TRUE), na.rm = TRUE)
+
+# Create new function psmaller() (equivalent of pmin)
+psmaller <- function(x, y, na.rm = TRUE){
+  l <- max(length(x), length(y))
+  if (length(x) < l) x <- rep(x, l)[seq(l)]
+  if (length(y) < l) y <- rep(y, l)[seq(l)]
+  vapply(seq(l), 
+         function(i) smaller(x[i], y[i], na.rm = na.rm),
+         numeric(1))
+}
+
+# Test psmaller
+pmin(5:1, pi)
+psmaller(5:1, pi)
+psmaller(pi, 5:1)
+psmaller(5:1, 1:5)
+psmaller(5:1, 1:2)
+
+# To create a new function plarger() which is equivalent to pmax(),
+# simply change smaller to larger in psmaller() function
+```
+
+```{r}
+# Create a function to find the smallest value in a vector
+rsmaller <- function(xs, na.rm = TRUE) {
+  Reduce(function(x, y) smaller(x, y, na.rm = na.rm), xs, init = NA)
+}
+
+# Test rsmaller
+rsmaller(10:1)
+
+# Create new function row_min()
+row_min <- function(x, na.rm = TRUE) {
+  apply(x, 1, rsmaller, na.rm = TRUE)
+}
+
+# Test row_min
+row_min(matrix(1:20, nrow = 4))
+
+# We could use the same logic of creating row_min to create row_max
+```
+
+
+2. Create a table that has and, or, add, multiply, smaller, and larger in the columns and binary operator, reducing variant, vectorised variant, and array variants in the rows.
+
+  a. Fill in the cells with the names of base R functions that perform each of the roles.
+
+```{r table, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+tabl <- "# Base R functions in each role
+|                    | And | Or  | Add | Multiply | Smaller | Larger |
+|--------------------|-----|-----|-----|----------|---------|--------|
+| Binary operator    |  &  |  |  |  +  |     *    |   min   |   max  |
+| Reducing variant   | all | any | sum |   prod   |   min   |   max  |   
+| Vectorised variant |  &  |  |  |  +  |     *    |  pmin   |  pmax  | 
+| Array variant      |  &  |  |  |  +  |     *    |  N.A.   |  N.A.  |
+"
+cat(tabl)
+```
+
+  b.Compare the names and arguments of the existing R functions. How consistent are they? How could you improve them?
+
+```{r echo=FALSE}
+message("R is very handy and consistent in using 'and', 'or', add, and multiply to between scalar, vector, and arrays. Depending on the input, the output could always return the same dimension.  For example, c(TRUE, TRUE) & c(TRUE, FALSE) returns (TRUE FALS)E, and (boolean matrix) & (boolean matrix) returns a boolean matrix.
+
+The naming of reducing cases is distinct from others as it is closer to mathematical terms.
+
+Although not highly consistent, these functions could becom intuitive after familiarizing with R.")
+```
+
+  c.Complete the matrix by implementing any missing functions.
+
+```{r}
+# Create new function amin for smaller in array variant
+amin <- function(x, y, na.rm = TRUE){
+  # get dimension
+  if (is.null(dim(x))) xd <- 0 else xd <- dim(x)
+  if (is.null(dim(y))) yd <- 0 else yd <- dim(y)
+  d <- pmax(xd, yd)
+  if (!identical(d, xd)) x <- array(c(x), d)
+  if (!identical(d, yd)) y <- array(c(y), d)
+  # flat matrix to vector
+  # vapply
+  out <- vapply(seq(prod(d)),
+         function(i) smaller(c(x)[i], c(y)[i], na.rm = na.rm),
+         numeric(1))
+  matrix(out, d)
+}
+
+# Test function
+amin(matrix(1:6, nrow = 2), matrix(rep(3,6), nrow = 2))
+amin(matrix(1:6, nrow = 2), matrix(rep(3,9), nrow = 3))
+amin(c(1:6), matrix(rep(3,9), nrow = 3))
+
+# The same logic could be applied to create larger in array variant
+```
+
+3. How does paste() fit into this structure? What is the scalar binary function that underlies paste()? What are the sep and collapse arguments to paste() equivalent to? Are there any paste variants that don't have existing R implementations?
+
+```{r table, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+tabl2 <- "# Fit paste() into the structure
+|                    |  paste |
+|--------------------|--------|
+| Binary operator    | paste0 |
+| Reducing variant   |  paste |   
+| Vectorised variant | paste0 | 
+| Array variant      |   N.A. |
+"
+cat(tabl2)
+```
+
+```{r, echo = FALSE}
+message("The sep argument is equivalent to paste one more scalar or vector object between the each pair of the inputs. The collapse argument is equivalent to reducing the result to an output of length 1 or not.
+
+It seems the array variant doesn't have existing R implementations.")
+```
+
+Play around with some examples.
+
+```{r}
+a <- paste(1, 2)
+b <- paste(c(1,2), c(3,4))
+b1 <- paste0(c(1,2), c(3,4))
+b2 <- paste(c(1,2), c(3,4), sep ="", collapse="")
+c <- paste(matrix(1:4, nrow = 2), matrix(5:8, nrow = 2))
+# binary operator with " "
+a
+length(a)
+# vectorized variant with " "
+b
+length(b)
+# vectorized variant without " "
+b1
+length(b1)
+# reducing variant
+b2
+length(b2)
+# not applicable to array variant
+c
+dim(c)
+```
+
