@@ -1,0 +1,164 @@
+---
+title: "Function Operators"
+author: "Byron Tang"
+date: "July 30, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+```
+
+## Behavioural FOs
+
+1. Write a FO that logs a time stamp and message to a file every time a function is run.
+
+```{r}
+# Create new function
+logTime <- function(fileName, f) {
+  function(...){
+    write(Sys.time(), file = fileName, append=TRUE)
+    f(...)
+  }
+}
+
+# Test function
+logTime("c:/Users/byron/Desktop/FO_ex1.txt", rnorm)(1)
+```
+
+2. What does the following function do? What would be a good name for it?
+
+f <- function(g) {
+  force(g)
+  result <- NULL
+  function(...) {
+    if (is.null(result)) {
+      result <<- g(...)
+    }
+    result
+  }
+}
+runif2 <- f(runif)
+runif2(5)
+   [1] 0.3856219 0.2596573 0.3964255 0.5439418 0.3688169
+runif2(10)
+   [1] 0.3856219 0.2596573 0.3964255 0.5439418 0.3688169
+
+```{r, echo=FALSE}
+message("The function remembers the result when the input function is run at the first time so that everytime it runs the result of the first time is returned. A name that indicates this feature would be good.")
+```
+
+3. Modify delay_by() so that instead of delaying by a fixed amount of time, it ensures that a certain amount of time has elapsed since the function was last called. That is, if you called g <- delay_by(1, f); g(); Sys.sleep(2); g() there shouldn't be an extra delay.
+
+```{r}
+delay_by <- function(delay, f) {
+  force(f)
+  lastTime <- NULL
+  function(...) {
+    if (is.null(lastTime)) {
+      Sys.sleep(delay)
+    } else if (Sys.time() - delay < lastTime) {
+      delayed <- Sys.time() - lastTime
+      Sys.sleep(delay - delayed)
+    }
+    f(...)
+    lastTime <<- Sys.time()
+    lastTime
+  }
+}
+
+g1 <- delay_by(3, rnorm)
+g1(1) # Start time
+Sys.sleep(5)
+g1(1) # No elapse
+Sys.sleep(2)
+g1(1) # Elapse for 1 sec
+g1(1) # Elapse for 3 sec
+```
+
+4. Write wait_until() which delays execution until a specific time.
+
+```{r}
+# Create new function
+wait_until <- function(t, f){
+  i <- 0
+  function(...){
+    while(Sys.time() < t){
+      Sys.sleep(1)
+      i <<- i + 1
+      if (i %% 10 == 0) cat(".")
+    }
+    f(...)
+  }
+}
+
+# Test function
+wait_until(Sys.time() + 30, rnorm)(1)
+```
+
+5. There are three places we could have added a memoise call: why did we choose the one we did?
+
+download <- memoise(dot_every(10, delay_by(1, download_file)))
+download <- dot_every(10, memoise(delay_by(1, download_file)))
+download <- dot_every(10, delay_by(1, memoise(download_file)))
+
+```{r echo=FALSE}
+message("The first option caches the the whole process that runs all the files. If there are duplicates, they will still be processed.
+
+The last option could avoid the process time of the same file, but it will still be delayed for 1 second no matter the file has been cached or not.
+
+In contrary, the second option could skip the process time of the same file and the delayed time to directly return the result. Therefore, the second option is optimal.")
+```
+
+6. Why is the remember() function inefficient? How could you implement it in more efficient way?
+
+remember <- function() {
+  memory <- list()
+  f <- function(...) {
+    # This is inefficient!
+    memory <<- append(memory, list(...))
+    invisible()
+  }
+
+  structure(f, class = "remember")
+}
+
+```{r, echo = FALSE}
+message("The problem in this code is that memory keeps on growing and growing. The operating system needs to allocate more and more space as the object grows. This process is really slow.
+        
+Reference and more efficient alternatives:
+https://stat.ethz.ch/pipermail/r-help/2011-August/287303.html")
+```
+
+7. Why does the following code, from stackoverflow, not do what you expect?
+
+- return a linear function with slope a and intercept b.
+f <- function(a, b) function(x) a * x + b
+
+- create a list of functions with different parameters.
+fs <- Map(f, a = c(0, 1), b = c(0, 1))
+
+fs[[1]](3)
+   [1] 0  
+   
+- should return 0 * 3 + 0 = 0
+How can you modify f so that it works correctly?
+
+```{r}
+# The original function only returns the result
+# To print out the whole equation, we need to use cat and do some formatting
+
+f <- function(a, b) function(x) cat(a, "*", x, "+", b, "=", a * x + b)
+fs <- Map(f, a = c(0, 1), b = c(0, 1))
+fs[[1]](3)
+```
+
+## Output FOs
+
+```{r}
+
+```
+
+## Input FOs
+
+## Combining FOs
