@@ -430,26 +430,115 @@ lapply(args, splat2(mean))
 1. Implement your own version of compose() using Reduce and %o%. For bonus points, do it without calling function.
 
 ```{r}
-compose2 <- function(...) {
-  funs <- list(...){
-    Funcall <- function(f) f
-    Reduce(Funcall, funs, 0, right = TRUE)
+sapply(mtcars, compose(length, unique))
+# Create new function
+`%o%` <- function(f, g){
+  Funcall <- function(f, ...) f(...)
+  function(x){
+    Reduce(Funcall, list(f,g), x, right = TRUE)
   }
 }
+# Test function
+sapply(mtcars, length %o% unique)
+# without calling a function
+sapply(mtcars, function(x) length(unique(x)))
 ```
-
-```{r}
-cadd <- function(x) Reduce("+", x, accumulate = FALSE)
-cadd(seq_len(7))
-
-cfrac <- function(x) Reduce(function(u, v) u + 1 / v, x, right = TRUE)
-## Continued fraction approximation for pi:
-cfrac(c(3, 7, 15, 1, 292))
-```
-
 
 2. Extend and() and or() to deal with any number of input functions. Can you do it with Reduce()? Can you keep them lazy (e.g., for and(), the function returns once it sees the first FALSE)?
 
+```{r}
+and <- function(f1, f2) {
+  force(f1); force(f2)
+  function(...) {
+    f1(...) && f2(...)
+  }
+}
+
+or <- function(f1, f2) {
+  force(f1); force(f2)
+  function(...) {
+    f1(...) || f2(...)
+  }
+}
+
+# extend and() and or() by using Reduce
+# Note: stuck on create a new function.
+try(Filter(and, list(is.character, is.factor, is.numeric), iris))
+Filter(Reduce(and, list(is.character, is.factor, is.numeric)), iris)
+head(Filter(Reduce(or, list(is.character, is.factor, is.numeric)), iris))
+```
+
 3. Implement the xor() binary operator. Implement it using the existing xor() function. Implement it as a combination of and() and or(). What are the advantages and disadvantages of each approach? Also think about what you'll call the resulting function to avoid a clash with the existing xor() function, and how you might change the names of and(), not(), and or() to keep them consistent.
 
+```{r}
+# Using the existing xor() function
+xorFO1 <- function(f1, f2){
+  force(f1); force(f2)
+  function(...) {
+    xor(f1(...), f2(...))
+  }
+}
+
+# Using the and() and or()
+xorFO2 <- function(f1, f2){
+  force(f1); force(f2)
+  function(...) {
+    sapply(..., or(f1, f2)) & !sapply(..., and(f1, f2))
+  }
+}
+
+# Test function
+head(Filter(and(is.numeric, is.double), iris))
+Filter(xorFO1(is.numeric, is.double), iris)
+iris[xorFO2(is.numeric, is.double)(iris)]
+```
+
+```{r, echo=FALSE}
+message("The advantage to implement xorFO() with existing xor() function is obviously clear codes and consistent usage with and() and or().
+        
+On the other hand, implementing xorFO() with and() and or() has some disadvantages. It requires more code, and the way to use the function is not consistent to and() and or().
+
+To avoide clash, I would rename and() and or() as andFO() and orFO() respectively to signal their feature of functional operation.")
+```
+
 4. Above, we implemented boolean algebra for functions that return a logical function. Implement elementary algebra (plus(), minus(), multiply(), divide(), exponentiate(), log()) for functions that return numeric vectors.
+
+```{r}
+# Create new function
+plus <- function(f1, f2){
+  force(f1); force(f2)
+  function(...) {
+    f1(...) + f2(...)
+  }
+}
+
+# Test function
+summary(iris)[3:4,]
+sapply(iris[1:4], plus(mean, median))
+
+# The same logc of creating plus could be applied to create 
+# minus, multiply, divide, and exponentiate
+# by simply replace `+` with `-`, `*`, `/`, and `^`
+```
+
+```{r}
+# Create new function
+log_new <- function(f1, f2){
+  force(f1); force(f2)
+  function(...) {
+    out1 <- sapply(..., f1)
+    out2 <- sapply(..., f2)
+    stopifnot(length(out1) == length(out2))
+    len <- length(out1)
+    l <- vector(mode = "double", length = len)
+    for (i in c(1:len)) {
+      l[i] <- log(out1[i], base = out2[i])
+    }
+    names(l) <- names(out1)
+    return(l)
+  }
+}
+# Test function
+log_new(mean, median)(iris[1:4])
+```
+
