@@ -91,8 +91,8 @@ class(y)
 
 ### 1. An early draft used this code to illustrate structure():
 
-#### structure(1:5, comment = "my attribute")
-#### [1] 1 2 3 4 5
+##### structure(1:5, comment = "my attribute")
+##### [1] 1 2 3 4 5
 
 ### But when you print that object you don't see the comment attribute. Why? Is the attribute missing, or is there something else special about it? (Hint: try using help.)
 
@@ -103,8 +103,8 @@ comment(structure(1:5, comment = "my attribute"))
 
 ### 2. What happens to a factor when you modify its levels?
 
-#### f1 <- factor(letters)
-#### levels(f1) <- rev(levels(f1))
+##### f1 <- factor(letters)
+##### levels(f1) <- rev(levels(f1))
 
 When we modify the levels of a factor, we are fundemantally chaning the category of each integer stored in the factor. For example, if 1 was assigned to a, changing the level a to z would make 1 related to z.
 
@@ -119,8 +119,8 @@ levels(e1)
 
 ### 3. What does this code do? How do f2 and f3 differ from f1?
 
-#### f2 <- rev(factor(letters))
-#### f3 <- factor(letters, levels = rev(letters))
+##### f2 <- rev(factor(letters))
+##### f3 <- factor(letters, levels = rev(letters))
 
 f2: The sequence of the underlining data is changed, but the order of levels does not change, which means the integer is still assigned to the same level.
 
