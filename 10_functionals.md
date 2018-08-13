@@ -1,19 +1,14 @@
----
-title: "Functionals"
-author: "Byron Tang"
-date: "July 16, 2018"
-output: github_document
----
+Functionals
+================
+Byron Tang
+July 16, 2018
 
-```{r setup, include=FALSE}
-library(parallel)
-```
-
-## My first functional: lapply()
+My first functional: lapply()
+-----------------------------
 
 #### 1. Why are the following two invocations of lapply() equivalent?
 
-```{r eval=FALSE}
+``` r
 trims <- c(0, 0.1, 0.2, 0.5)
 x <- rcauchy(100)
 
@@ -23,9 +18,9 @@ lapply(trims, mean, x = x)
 
 In both invocations, the trim argument in mean is supplied by each element in trims while the x argument is constantly the x vector. Therefore, the outputs are the same.
 
-#### 2. The function below scales a vector so it falls in the range [0, 1]. How would you apply it to every column of a data frame? How would you apply it to every numeric column in a data frame?
+#### 2. The function below scales a vector so it falls in the range \[0, 1\]. How would you apply it to every column of a data frame? How would you apply it to every numeric column in a data frame?
 
-```{r eval=FALSE}
+``` r
 scale01 <- function(x) {
   rng <- range(x, na.rm = TRUE)
   (x - rng[1]) / (rng[2] - rng[1])
@@ -34,7 +29,7 @@ scale01 <- function(x) {
 
 Run the codes
 
-```{r}
+``` r
 scale01 <- function(x) {
   rng <- range(x, na.rm = TRUE)
   (x - rng[1]) / (rng[2] - rng[1])
@@ -43,14 +38,29 @@ scale01 <- function(x) {
 
 Apply the function to every column of a data frame
 
-```{r}
+``` r
 df_num <- data.frame(lapply(mtcars, scale01))
 head(df_num)
 ```
 
+    ##         mpg cyl      disp        hp      drat        wt      qsec vs am
+    ## 1 0.4510638 0.5 0.2217511 0.2049470 0.5253456 0.2830478 0.2333333  0  1
+    ## 2 0.4510638 0.5 0.2217511 0.2049470 0.5253456 0.3482485 0.3000000  0  1
+    ## 3 0.5276596 0.0 0.0920429 0.1448763 0.5023041 0.2063411 0.4892857  1  1
+    ## 4 0.4680851 0.5 0.4662010 0.2049470 0.1474654 0.4351828 0.5880952  1  0
+    ## 5 0.3531915 1.0 0.7206286 0.4346290 0.1797235 0.4927129 0.3000000  0  0
+    ## 6 0.3276596 0.5 0.3838863 0.1872792 0.0000000 0.4978266 0.6809524  1  0
+    ##   gear      carb
+    ## 1  0.5 0.4285714
+    ## 2  0.5 0.4285714
+    ## 3  0.5 0.0000000
+    ## 4  0.0 0.0000000
+    ## 5  0.0 0.1428571
+    ## 6  0.0 0.0000000
+
 Apply to every numeric column in a data frame
 
-```{r} 
+``` r
 mtcars2 <- mtcars
 mtcars2$vs <- factor(mtcars2$vs)
 mtcars2$am <- factor(mtcars2$am)
@@ -58,9 +68,24 @@ df_num2 <- data.frame(lapply(mtcars2[sapply(mtcars2, is.numeric)], scale01))
 head(df_num2)
 ```
 
+    ##         mpg cyl      disp        hp      drat        wt      qsec gear
+    ## 1 0.4510638 0.5 0.2217511 0.2049470 0.5253456 0.2830478 0.2333333  0.5
+    ## 2 0.4510638 0.5 0.2217511 0.2049470 0.5253456 0.3482485 0.3000000  0.5
+    ## 3 0.5276596 0.0 0.0920429 0.1448763 0.5023041 0.2063411 0.4892857  0.5
+    ## 4 0.4680851 0.5 0.4662010 0.2049470 0.1474654 0.4351828 0.5880952  0.0
+    ## 5 0.3531915 1.0 0.7206286 0.4346290 0.1797235 0.4927129 0.3000000  0.0
+    ## 6 0.3276596 0.5 0.3838863 0.1872792 0.0000000 0.4978266 0.6809524  0.0
+    ##        carb
+    ## 1 0.4285714
+    ## 2 0.4285714
+    ## 3 0.0000000
+    ## 4 0.0000000
+    ## 5 0.1428571
+    ## 6 0.0000000
+
 #### 3. Use both for loops and lapply() to fit linear models to the mtcars using the formulas stored in this list:
 
-```{r eval=FALSE}
+``` r
 formulas <- list(
   mpg ~ disp,
   mpg ~ I(1 / disp),
@@ -71,7 +96,7 @@ formulas <- list(
 
 Run the codes
 
-```{r}
+``` r
 formulas <- list(
   mpg ~ disp,
   mpg ~ I(1 / disp),
@@ -82,7 +107,7 @@ formulas <- list(
 
 for loop
 
-```{r}
+``` r
 list_lm <- vector("list", length(formulas))
 for (i in 1:length(formulas)){
   list_lm[[i]] <- lm(formulas[[i]], data = mtcars)
@@ -90,16 +115,48 @@ for (i in 1:length(formulas)){
 lapply(list_lm, function(x) round(x$coefficients, 5))
 ```
 
+    ## [[1]]
+    ## (Intercept)        disp 
+    ##    29.59985    -0.04122 
+    ## 
+    ## [[2]]
+    ## (Intercept)   I(1/disp) 
+    ##    10.75202  1557.67393 
+    ## 
+    ## [[3]]
+    ## (Intercept)        disp          wt 
+    ##    34.96055    -0.01772    -3.35083 
+    ## 
+    ## [[4]]
+    ## (Intercept)   I(1/disp)          wt 
+    ##    19.02421  1142.55997    -1.79765
+
 lapply
 
-```{r}
+``` r
 list_lm2 <- lapply(formulas, function(x) lm(x, data = mtcars))
 lapply(list_lm2, function(x) round(x$coefficients, 5))
 ```
 
+    ## [[1]]
+    ## (Intercept)        disp 
+    ##    29.59985    -0.04122 
+    ## 
+    ## [[2]]
+    ## (Intercept)   I(1/disp) 
+    ##    10.75202  1557.67393 
+    ## 
+    ## [[3]]
+    ## (Intercept)        disp          wt 
+    ##    34.96055    -0.01772    -3.35083 
+    ## 
+    ## [[4]]
+    ## (Intercept)   I(1/disp)          wt 
+    ##    19.02421  1142.55997    -1.79765
+
 #### 4. Fit the model mpg ~ disp to each of the bootstrap replicates of mtcars in the list below by using a for loop and lapply(). Can you do it without an anonymous function?
 
-```{r eval=FALSE}
+``` r
 bootstraps <- lapply(1:10, function(i) {
   rows <- sample(1:nrow(mtcars), rep = TRUE)
   mtcars[rows, ]
@@ -108,7 +165,7 @@ bootstraps <- lapply(1:10, function(i) {
 
 for loop
 
-```{r}
+``` r
 list_lm3 <- vector("list", 10)
 for(i in 1:10){
   rows <- sample(1:nrow(mtcars), rep = TRUE)
@@ -117,58 +174,104 @@ for(i in 1:10){
 sapply(list_lm3, function(x) round(x$coefficients, 5))
 ```
 
+    ##                 [,1]     [,2]     [,3]     [,4]     [,5]     [,6]     [,7]
+    ## (Intercept) 30.14238 28.57313 28.85427 31.12121 27.87905 30.32796 30.34476
+    ## disp        -0.04662 -0.03438 -0.04267 -0.04706 -0.03671 -0.04180 -0.04316
+    ##                 [,8]     [,9]    [,10]
+    ## (Intercept) 30.16640 30.49615 30.10447
+    ## disp        -0.04073 -0.04450 -0.04678
+
 Combine all steps into one lapply() function. However, it's unavoidable to use an anonymous function.
 
 Note: Need to set simplify as FALSE to keep data frame format from replicate()
 
-```{r}
+``` r
 list_lm4 <- lapply(replicate(10, mtcars[sample(1:nrow(mtcars), rep = TRUE), ],
                              simplify = FALSE), 
                    function(x) lm(mpg ~ disp, data = x))
 sapply(list_lm4, function(x) round(x$coefficients, 5))
 ```
 
+    ##                 [,1]     [,2]     [,3]     [,4]     [,5]     [,6]     [,7]
+    ## (Intercept) 27.82366 30.40174 30.21161 27.88662 29.74847 29.55832 27.93028
+    ## disp        -0.03383 -0.04133 -0.04396 -0.03612 -0.04205 -0.03949 -0.03572
+    ##                 [,8]     [,9]    [,10]
+    ## (Intercept) 29.38898 29.05849 28.88539
+    ## disp        -0.04361 -0.03788 -0.03752
+
 #### 5. For each model in the previous two exercises, extract R2 using the function below.
 
-```{r}
+``` r
 rsq <- function(mod) summary(mod)$r.squared
 ```
 
 Extract R2
 
-```{r}
+``` r
 rsq <- function(mod) summary(mod)$r.squared
 sapply(list_lm, rsq)
+```
+
+    ## [1] 0.7183433 0.8596865 0.7809306 0.8838038
+
+``` r
 sapply(list_lm2, rsq)
+```
+
+    ## [1] 0.7183433 0.8596865 0.7809306 0.8838038
+
+``` r
 sapply(list_lm3, rsq)
+```
+
+    ##  [1] 0.8288491 0.6558208 0.6876203 0.6677552 0.7387817 0.6791875 0.7233880
+    ##  [8] 0.7086177 0.7484268 0.7742689
+
+``` r
 sapply(list_lm4, rsq)
 ```
 
-## For loop funcitonals: friends of lapply()
+    ##  [1] 0.6570449 0.6593197 0.7182210 0.7586289 0.7763307 0.6888070 0.6699989
+    ##  [8] 0.7648373 0.6858969 0.6656067
+
+For loop funcitonals: friends of lapply()
+-----------------------------------------
 
 #### 1. Use vapply() to:
+
 #### a. Compute the standard deviation of every column in a numeric data frame.
+
 #### b. Compute the standard deviation of every numeric column in a mixed data frame. (Hint: you'll need to use vapply() twice.)
 
 a
 
-```{r}
+``` r
 vapply(mtcars, sd, numeric(1))
 ```
 
+    ##         mpg         cyl        disp          hp        drat          wt 
+    ##   6.0269481   1.7859216 123.9386938  68.5628685   0.5346787   0.9784574 
+    ##        qsec          vs          am        gear        carb 
+    ##   1.7869432   0.5040161   0.4989909   0.7378041   1.6152000
+
 b
 
-```{r}
+``` r
 vapply(mtcars[, vapply(mtcars2, is.numeric, logical(1))], sd, numeric(1))
 ```
 
+    ##         mpg         cyl        disp          hp        drat          wt 
+    ##   6.0269481   1.7859216 123.9386938  68.5628685   0.5346787   0.9784574 
+    ##        qsec        gear        carb 
+    ##   1.7869432   0.7378041   1.6152000
+
 #### 2. Why is using sapply() to get the class() of each element in a data frame dangerous?
 
-The elements in a data frame might not have only one class. When any one of the element has more than one class, sapply would return a list instead of a vector. It might error out the following process or function without clear message if the expected output is a vector.
+The elements in a data frame might not have only one class. When any one of the element has more than one class, sapply would return a list instead of a vector. It might error out thefollowing process or function without clear message if the expected output is a vector.
 
 #### 3. The following code simulates the performance of a t-test for non-normal data. Use sapply() and an anonymous function to extract the p-value from every trial.
 
-```{r}
+``` r
 trials <- replicate(
   100, 
   t.test(rpois(10, 10), rpois(7, 10)),
@@ -176,11 +279,11 @@ trials <- replicate(
 )
 ```
 
-#### Extra challenge: get rid of the anonymous function by using [[ directly.
+#### Extra challenge: get rid of the anonymous function by using \[\[ directly.
 
 Run the codes
 
-```{r}
+``` r
 trials <- replicate(
   100, 
   t.test(rpois(10, 10), rpois(7, 10)),
@@ -188,17 +291,26 @@ trials <- replicate(
 )
 ```
 
-```{r}
+``` r
 # use sapply() & an anonymous funciton
 head(sapply(trials, function(x) x$p.value), 10)
+```
+
+    ##  [1] 0.3193226 0.1616558 0.2549801 0.0538109 0.8743267 0.1473575 0.4074743
+    ##  [8] 0.1587665 0.5677774 0.5493095
+
+``` r
 # use [[
 head(unlist(Map(`[[`, trials, "p.value")), 10)
 ```
 
+    ##  [1] 0.3193226 0.1616558 0.2549801 0.0538109 0.8743267 0.1473575 0.4074743
+    ##  [8] 0.1587665 0.5677774 0.5493095
+
 #### 4. What does replicate() do? What sort of for loop does it eliminate? Why do its arguments differ from lapply() and friends?
 
 replicate is a wrapper for the common use of sapply for repeated evaluation of an expression (which will usually involve random number generation).
-        
+
 It eliminates the loop over the numeric indices: for (i in n)
 
 Only replicate has the argument of expr, which is the expression (a language object, usually a call) to evaluate repeatedly.
@@ -207,7 +319,7 @@ Only replicate has the argument of expr, which is the expression (a language obj
 
 Create function
 
-```{r}
+``` r
 lapply2 <- function(x1, x2, FUN, ...){
   out <- vector("list", length(x1))
   for (i in seq_along(x1)) {
@@ -221,94 +333,125 @@ ws <- replicate(5, rpois(10, 5) + 1, simplify = FALSE)
 
 Test function and check with Map()
 
-```{r}
+``` r
 unlist(lapply2(xs, ws, weighted.mean))
+```
+
+    ## [1] 0.3997142 0.5030178 0.3455365 0.6181193 0.5967283
+
+``` r
 unlist(Map(weighted.mean, xs, ws))
 ```
+
+    ## [1] 0.3997142 0.5030178 0.3455365 0.6181193 0.5967283
 
 #### 6. Implement a combination of Map() and vapply() to create an lapply() variant that iterates in parallel over all of its inputs and stores its outputs in a vector (or a matrix). What arguments should the function take?
 
 Create function
 
-```{r}
+``` r
 lapply3 <- function (f, mc.cores = 1L, FUN.VALUE = character(1), ...) 
 {
-	cores <- as.integer(mc.cores)
-	if (cores < 1L) 
-		stop("'mc.cores' must be >= 1")
-	if (cores > 1L) 
-		stop("'mc.cores' > 1 is not supported on Windows")
-	vapply(Map(f, ...), function(x) x, FUN.VALUE = FUN.VALUE)
+    cores <- as.integer(mc.cores)
+    if (cores < 1L) 
+        stop("'mc.cores' must be >= 1")
+    if (cores > 1L) 
+        stop("'mc.cores' > 1 is not supported on Windows")
+    vapply(Map(f, ...), function(x) x, FUN.VALUE = FUN.VALUE)
 }
-
 ```
 
 Test function (mc.core must be exactly 1 on Windows (which uses the master process))
 
-```{r}
+``` r
 lapply3(xs, ws, f = weighted.mean, mc.cores = 1L, FUN.VALUE = numeric(1))
 ```
+
+    ## [1] 0.3997142 0.5030178 0.3455365 0.6181193 0.5967283
 
 #### 7. Implement mcsapply(), a multicore version of sapply(). Can you implement mcvapply(), a parallel version of vapply()? Why or why not?
 
 Create function mcsapply
 
-```{r}
+``` r
 mcsapply <- function (X, FUN, ..., mc.preschedule = TRUE, mc.set.seed = TRUE, 
-	mc.silent = FALSE, mc.cores = 1L, mc.cleanup = TRUE, mc.allow.recursive = TRUE, 
-	affinity.list = NULL) 
+    mc.silent = FALSE, mc.cores = 1L, mc.cleanup = TRUE, mc.allow.recursive = TRUE, 
+    affinity.list = NULL) 
 {
-	cores <- as.integer(mc.cores)
-	if (cores < 1L) 
-		stop("'mc.cores' must be >= 1")
-	if (cores > 1L) 
-		stop("'mc.cores' > 1 is not supported on Windows")
-	sapply(X, FUN, ...)
+    cores <- as.integer(mc.cores)
+    if (cores < 1L) 
+        stop("'mc.cores' must be >= 1")
+    if (cores > 1L) 
+        stop("'mc.cores' > 1 is not supported on Windows")
+    sapply(X, FUN, ...)
 }
 ```
 
 Test function
 
-```{r}
+``` r
 mcsapply(mtcars, mean)
 ```
 
+    ##        mpg        cyl       disp         hp       drat         wt 
+    ##  20.090625   6.187500 230.721875 146.687500   3.596563   3.217250 
+    ##       qsec         vs         am       gear       carb 
+    ##  17.848750   0.437500   0.406250   3.687500   2.812500
+
 Technically we could also create mcvapply. However, my test case is limited to windows.
 
-```{r}
+``` r
 mcvapply <- function (X, FUN, ..., mc.preschedule = TRUE, mc.set.seed = TRUE, 
-	mc.silent = FALSE, mc.cores = 1L, mc.cleanup = TRUE, mc.allow.recursive = TRUE, 
-	affinity.list = NULL) 
+    mc.silent = FALSE, mc.cores = 1L, mc.cleanup = TRUE, mc.allow.recursive = TRUE, 
+    affinity.list = NULL) 
 {
-	cores <- as.integer(mc.cores)
-	if (cores < 1L) 
-		stop("'mc.cores' must be >= 1")
-	if (cores > 1L) 
-		stop("'mc.cores' > 1 is not supported on Windows")
-	vapply(X, FUN, ...)
+    cores <- as.integer(mc.cores)
+    if (cores < 1L) 
+        stop("'mc.cores' must be >= 1")
+    if (cores > 1L) 
+        stop("'mc.cores' > 1 is not supported on Windows")
+    vapply(X, FUN, ...)
 }
 
 mcvapply(mtcars, class, character(1))
 ```
 
-## Manipulating matrices and data frames
+    ##       mpg       cyl      disp        hp      drat        wt      qsec 
+    ## "numeric" "numeric" "numeric" "numeric" "numeric" "numeric" "numeric" 
+    ##        vs        am      gear      carb 
+    ## "numeric" "numeric" "numeric" "numeric"
+
+Manipulating matrices and data frames
+-------------------------------------
 
 #### 1. How does apply() arrange the output? Read the documentation and perform some experiments.
 
-If each call to FUN returns a vector of length n, then apply returns an array of dimension c(n, dim(X)[MARGIN]) if n > 1. If n equals 1, apply returns a vector if MARGIN has length 1 and an array of dimension dim(X)[MARGIN] otherwise. If n is 0, the result has length 0 but not necessarily the 'correct' dimension.
+If each call to FUN returns a vector of length n, then apply returns an array of dimension c(n, dim(X)\[MARGIN\]) if n &gt; 1. If n equals 1, apply returns a vector if MARGIN has length 1 and an array of dimension dim(X)\[MARGIN\] otherwise. If n is 0, the result has length 0 but not necessarily the 'correct' dimension.
 
-If the calls to FUN return vectors of different lengths, apply returns a list of length prod(dim(X)[MARGIN]) with dim set to MARGIN if this has length greater than one.
+If the calls to FUN return vectors of different lengths, apply returns a list of length prod(dim(X)\[MARGIN\]) with dim set to MARGIN if this has length greater than one.
 
-```{r}
+``` r
 # When n > 1, return an array of dimension c(n, dim(X)[MARGIN])
 dim(apply(mtcars, 2, function(x) c(mean(x), median(x))))
+```
 
+    ## [1]  2 11
+
+``` r
 # When n = 1, return a vector (no dimension)
 dim(apply(mtcars, 2, mean))
+```
 
+    ## NULL
+
+``` r
 # When n = 0, the result has length 0
 length(apply(mtcars, 2, function(x) NULL))
+```
 
+    ## [1] 0
+
+``` r
 # When returning vectors of different lengths 
 # (example from R documentation)
 z <- array(1:24, dim = 2:4)
@@ -316,11 +459,24 @@ zseq <- apply(z, 1:2, function(x) seq_len(max(x)))
 apply(z, 3, function(x) seq_len(max(x)))
 ```
 
+    ## [[1]]
+    ## [1] 1 2 3 4 5 6
+    ## 
+    ## [[2]]
+    ##  [1]  1  2  3  4  5  6  7  8  9 10 11 12
+    ## 
+    ## [[3]]
+    ##  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18
+    ## 
+    ## [[4]]
+    ##  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+    ## [24] 24
+
 #### 2. There's no equivalent to split() + vapply(). Should there be? When would it be useful? Implement one yourself.
 
-There should be a equivalent function of split() + vapply() as it could be useful when this kind of function needs to always generate desirable outputs in cases such as implemention in another function.\n
+There should be a equivalent function of split() + vapply() as it could be useful when this kind of function needs to always generate desirable outputs in cases such as implemention in another function.
 
-```{r, warning=FALSE}
+``` r
 # tapply throughs an error when one of the output has lenght zero
 pulse <- c(round(rnorm(22, 70, 10 / 3)) + rep(c(0, 5), c(10, 12)), NULL)
 group <- c(rep(c("A", "B"), c(10, 12)), "C")
@@ -334,11 +490,14 @@ tapply2 <- function(x, group, f, FUN.VALUE, ...) {
 tapply2(pulse, group, length, numeric(1))
 ```
 
+    ##  A  B  C 
+    ## 10 12  0
+
 #### 3. Implement a pure R version of split(). (Hint: use unique() and subsetting.) Can you do it without a for loop?
 
 Create function
 
-```{r}
+``` r
 split2 <- function(x, group){
   g <- unique(group)
   out <- lapply(g, function(g) x[group == g])
@@ -348,50 +507,56 @@ split2 <- function(x, group){
 
 Test function
 
-```{r}
+``` r
 pulse <- c(round(rnorm(22, 70, 10 / 3)) + rep(c(0, 5), c(10, 12)))
 group <- c(rep(c("A", "B"), c(10, 12)))
 split2(pulse, group)
 ```
 
+    ## $A
+    ##  [1] 69 70 78 70 65 74 68 73 68 70
+    ## 
+    ## $B
+    ##  [1] 69 79 83 75 76 77 77 74 78 70 79 74
+
 #### 4. What other types of input and output are missing? Brainstorm before you look up some answers in the plyr paper.
 
-Output: Discarded (*_ply)
+Output: Discarded (\*\_ply)
 
-Sometimes it is convenient to operate on a list purely for the side eects, e.g., plots, caching,
-and output to screen/le. In this case *_ply is a little more ecient than abandoning the
-output of *lply because it does not store the intermediate results.
-The *_ply functions have one additional argument, .print, which controls whether or not
-each result should be printed. This is useful when working with lattice (Sarkar 2008) or
-ggplot2 (Wickham 2010) graphics.
+Sometimes it is convenient to operate on a list purely for the side eects, e.g., plots, caching, and output to screen/le. In this case \*\_ply is a little more ecient than abandoning the output of *lply because it does not store the intermediate results. The *\_ply functions have one additional argument, .print, which controls whether or not each result should be printed. This is useful when working with lattice (Sarkar 2008) or ggplot2 (Wickham 2010) graphics.
 
-Reference:
-The Split-Apply-Combine Strategy for Data Analysis (https://www.jstatsoft.org/article/view/v040i01)
+Reference: The Split-Apply-Combine Strategy for Data Analysis (<https://www.jstatsoft.org/article/view/v040i01>)
 
-## Manipulating lists
+Manipulating lists
+------------------
 
 #### 1. Why isn't is.na() a predicate function? What base R function is closest to being a predicate version of is.na()?
 
 is.na() doesn't return a single TRUE or FALSE
 
-```{r}
+``` r
 list_test <-
   list(a = c(1:5),
        b = replicate(5, NA))
 message("")
 ```
 
+    ## 
+
 To return a single TRUE or FALSE, one option is to combine all() and is.na() from base R functions.
 
-```{r}
+``` r
 sapply(list_test, function(x) all(is.na(x)))
 ```
+
+    ##     a     b 
+    ## FALSE  TRUE
 
 #### 2. Use Filter() and vapply() to create a function that applies a summary statistic to every numeric column in a data frame.
 
 Create function
 
-```{r}
+``` r
 summary2 <- function(df){
   vapply(Filter(is.numeric, df), summary, FUN.VALUE = numeric(6))
 }
@@ -399,23 +564,38 @@ summary2 <- function(df){
 
 Test function (vs and am are factors)
 
-```{r}
+``` r
 summary2(mtcars2)
 ```
+
+    ##              mpg    cyl     disp       hp     drat      wt     qsec   gear
+    ## Min.    10.40000 4.0000  71.1000  52.0000 2.760000 1.51300 14.50000 3.0000
+    ## 1st Qu. 15.42500 4.0000 120.8250  96.5000 3.080000 2.58125 16.89250 3.0000
+    ## Median  19.20000 6.0000 196.3000 123.0000 3.695000 3.32500 17.71000 4.0000
+    ## Mean    20.09062 6.1875 230.7219 146.6875 3.596563 3.21725 17.84875 3.6875
+    ## 3rd Qu. 22.80000 8.0000 326.0000 180.0000 3.920000 3.61000 18.90000 4.0000
+    ## Max.    33.90000 8.0000 472.0000 335.0000 4.930000 5.42400 22.90000 5.0000
+    ##           carb
+    ## Min.    1.0000
+    ## 1st Qu. 2.0000
+    ## Median  2.0000
+    ## Mean    2.8125
+    ## 3rd Qu. 4.0000
+    ## Max.    8.0000
 
 #### 3. What's the relationship between which() and Position()? What's the relationship between where() and Filter()?
 
 Position() is equivalent to:
 
-```{r eval=FALSE}
+``` r
 function(x) which(x)[1]
 ```
 
 which() returns the opsition of all the lements that match the predicate, while Position() returns the position of the first element that matches the predicate (or the last element if right = TRUE).
-        
-Filter() could be considered as: 
 
-```{r eval=FALSE}
+Filter() could be considered as:
+
+``` r
 function(f, x) x[where(f, x)]
 ```
 
@@ -425,7 +605,7 @@ where() returns a logical vector of TRUE and FALSE indicating whether the elemen
 
 Create function
 
-```{r}
+``` r
 where <- function(f, x) {
   vapply(x, f, logical(1))
 }
@@ -439,17 +619,29 @@ All <- function(f, x){
 
 Test function
 
-```{r}
+``` r
 Any(is.numeric, mtcars2)
+```
+
+    ## [1] TRUE
+
+``` r
 All(is.numeric, mtcars2)
+```
+
+    ## [1] FALSE
+
+``` r
 All(is.numeric, mtcars)
 ```
+
+    ## [1] TRUE
 
 #### 5. Implement the span() function from Haskell: given a list x and a predicate function f, span returns the location of the longest sequential run of elements where the predicate is true. (Hint: you might find rle() helpful.)
 
 Create function
 
-```{r}
+``` r
 span <- function(f, x){
   y <- unname(vapply(x, f, logical(1)))
   sq <- rle(y)
@@ -472,25 +664,43 @@ span <- function(f, x){
 }
 ```
 
-Test function 
+Test function
 
-```{r}
+``` r
 vapply(mtcars2, is.factor, logical(1))
+```
+
+    ##   mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb 
+    ## FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+
+``` r
 span(is.numeric, mtcars2) # senario 1
+```
+
+    ## [1] 1 2 3 4 5 6 7
+
+``` r
 span(is.factor, mtcars2) # senario 2
+```
+
+    ## [1] 8 9
+
+``` r
 span(is.numeric, mtcars2[c("qsec", "vs", "am", "gear", "carb")]) # senario 3
 ```
 
-## Mathematical functionals
+    ## [1] 2 3
 
-Reference for the negative log likelihood (NLL) closure in the lecture:
-https://www.statlect.com/fundamentals-of-statistics/Poisson-distribution-maximum-likelihood
+Mathematical functionals
+------------------------
 
-#### 1. Implement arg_max(). It should take a function and a vector of inputs, and return the elements of the input where the function returns the highest value. For example, arg_max(-10:5, function(x) x ^ 2) should return -10. arg_max(-5:5, function(x) x ^ 2) should return c(-5, 5). Also implement the matching arg_min() function.
+Reference for the negative log likelihood (NLL) closure in the lecture: <https://www.statlect.com/fundamentals-of-statistics/Poisson-distribution-maximum-likelihood>
 
-Create function 
+#### 1. Implement arg\_max(). It should take a function and a vector of inputs, and return the elements of the input where the function returns the highest value. For example, arg\_max(-10:5, function(x) x ^ 2) should return -10. arg\_max(-5:5, function(x) x ^ 2) should return c(-5, 5). Also implement the matching arg\_min() function.
 
-```{r}
+Create function
+
+``` r
 arg_max <- function(vec, fun) {
   out <- sapply(vec, fun)
   vec[out == max(out)]
@@ -499,24 +709,32 @@ arg_max <- function(vec, fun) {
 
 Test function
 
-```{r}
+``` r
 arg_max(-10:5, function(x) x ^ 2)
+```
+
+    ## [1] -10
+
+``` r
 arg_max(-5:5, function(x) x ^ 2)
 ```
 
-To create arg_min(), simply change max() into min() inside the arg_max function.
+    ## [1] -5  5
 
-#### 2. Challenge: read about the fixed point algorithm (http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-12.html#%_sec_1.3). Complete the exercises using R.
+To create arg\_min(), simply change max() into min() inside the arg\_max function.
+
+#### 2. Challenge: read about the fixed point algorithm ([http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-12.html\#%\_sec\_1.3](http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-12.html#%_sec_1.3)). Complete the exercises using R.
 
 Link doesn't work.
 
-## Case study
+Case study
+----------
 
-#### 1. Implement smaller and larger functions that, given two inputs, return either the smaller or the larger value. Implement na.rm = TRUE: what should the identity be? (Hint: smaller(x, smaller(NA, NA, na.rm = TRUE), na.rm = TRUE) must be x, so smaller(NA, NA, na.rm = TRUE) must be bigger than any other value of x.) Use smaller and larger to implement equivalents of min(), max(), pmin(), pmax(), and new functions row_min() and row_max().
+#### 1. Implement smaller and larger functions that, given two inputs, return either the smaller or the larger value. Implement na.rm = TRUE: what should the identity be? (Hint: smaller(x, smaller(NA, NA, na.rm = TRUE), na.rm = TRUE) must be x, so smaller(NA, NA, na.rm = TRUE) must be bigger than any other value of x.) Use smaller and larger to implement equivalents of min(), max(), pmin(), pmax(), and new functions row\_min() and row\_max().
 
 Create function for na.rm
 
-```{r}
+``` r
 # Create function for na.rm
 rm_na <- function(x, y, identity) {
   if (is.na(x) && is.na(y)) {
@@ -531,7 +749,7 @@ rm_na <- function(x, y, identity) {
 
 Create function smaller (equivalent of min)
 
-```{r}
+``` r
 smaller <- function(x, y, na.rm = FALSE) {
   stopifnot(length(x) == 1, length(y) == 1)
   if (na.rm && (is.na(x) || is.na(y))) 
@@ -547,17 +765,39 @@ smaller <- function(x, y, na.rm = FALSE) {
 
 Test smaller
 
-```{r}
+``` r
 smaller(1, 2)
+```
+
+    ## [1] 1
+
+``` r
 smaller(2, NA)
+```
+
+    ## [1] NA
+
+``` r
 smaller(2, NA, na.rm = TRUE)
+```
+
+    ## [1] 2
+
+``` r
 smaller(NA, NA, na.rm = TRUE)
+```
+
+    ## [1] NA
+
+``` r
 smaller(1, smaller(NA, NA, na.rm = TRUE), na.rm = TRUE)
 ```
 
+    ## [1] 1
+
 Create function larger() (equivalent of max)
 
-```{r}
+``` r
 larger <- function(x, y, na.rm = FALSE) {
   stopifnot(length(x) == 1, length(y) == 1)
   if (na.rm && (is.na(x) || is.na(y))) 
@@ -573,17 +813,39 @@ larger <- function(x, y, na.rm = FALSE) {
 
 Test larger
 
-```{r}
+``` r
 larger(1, 2)
+```
+
+    ## [1] 2
+
+``` r
 larger(2, NA)
+```
+
+    ## [1] NA
+
+``` r
 larger(2, NA, na.rm = TRUE)
+```
+
+    ## [1] 2
+
+``` r
 larger(NA, NA, na.rm = TRUE)
+```
+
+    ## [1] NA
+
+``` r
 larger(1, larger(NA, NA, na.rm = TRUE), na.rm = TRUE)
 ```
 
+    ## [1] 1
+
 Create function psmaller() (equivalent of pmin)
 
-```{r}
+``` r
 psmaller <- function(x, y, na.rm = TRUE){
   l <- max(length(x), length(y))
   if (length(x) < l) x <- rep(x, l)[seq(l)]
@@ -596,20 +858,41 @@ psmaller <- function(x, y, na.rm = TRUE){
 
 Test psmaller
 
-```{r} 
+``` r
 pmin(5:1, pi)
+```
+
+    ## [1] 3.141593 3.141593 3.000000 2.000000 1.000000
+
+``` r
 psmaller(5:1, pi)
+```
+
+    ## [1] 3.141593 3.141593 3.000000 2.000000 1.000000
+
+``` r
 psmaller(pi, 5:1)
+```
+
+    ## [1] 3.141593 3.141593 3.000000 2.000000 1.000000
+
+``` r
 psmaller(5:1, 1:5)
+```
+
+    ## [1] 1 2 3 2 1
+
+``` r
 psmaller(5:1, 1:2)
 ```
 
-To create a new function plarger() which is equivalent to pmax(),
-simply change smaller to larger in psmaller() function
+    ## [1] 1 2 1 2 1
+
+To create a new function plarger() which is equivalent to pmax(), simply change smaller to larger in psmaller() function
 
 Create a function to find the smallest value in a vector
 
-```{r}
+``` r
 rsmaller <- function(xs, na.rm = TRUE) {
   Reduce(function(x, y) smaller(x, y, na.rm = na.rm), xs, init = NA)
 }
@@ -617,50 +900,48 @@ rsmaller <- function(xs, na.rm = TRUE) {
 
 Test rsmaller
 
-```{r}
+``` r
 rsmaller(10:1)
 ```
 
-Create new function row_min()
+    ## [1] 1
 
-```{r}
+Create new function row\_min()
+
+``` r
 row_min <- function(x, na.rm = TRUE) {
   apply(x, 1, rsmaller, na.rm = TRUE)
 }
 ```
 
-Test row_min
+Test row\_min
 
-```{r}
+``` r
 row_min(matrix(1:20, nrow = 4))
-
 ```
 
-The same logic of creating row_min could be applied to create row_max
+    ## [1] 1 2 3 4
+
+The same logic of creating row\_min could be applied to create row\_max
 
 #### 2. Create a table that has and, or, add, multiply, smaller, and larger in the columns and binary operator, reducing variant, vectorised variant, and array variants in the rows.
 
-####  a. Fill in the cells with the names of base R functions that perform each of the roles.
+#### a. Fill in the cells with the names of base R functions that perform each of the roles.
 
-####  b. Compare the names and arguments of the existing R functions. How consistent are they? How could you improve them?
+#### b. Compare the names and arguments of the existing R functions. How consistent are they? How could you improve them?
 
-####  c. Complete the matrix by implementing any missing functions.
+#### c. Complete the matrix by implementing any missing functions.
 
 Base R functions in each role
 
-```{r table 1, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
-tabl <- " 
 |                    | And | Or  | Add | Multiply | Smaller | Larger |
 |--------------------|-----|-----|-----|----------|---------|--------|
-| Binary operator    |  &  |  |  |  +  |     *    |   min   |   max  |
-| Reducing variant   | all | any | sum |   prod   |   min   |   max  |   
-| Vectorised variant |  &  |  |  |  +  |     *    |  pmin   |  pmax  | 
-| Array variant      |  &  |  |  |  +  |     *    |  N.A.   |  N.A.  |
-"
-cat(tabl)
-```
+| Binary operator    | &   |     |     | +        | \*      | min    |
+| Reducing variant   | all | any | sum | prod     | min     | max    |
+| Vectorised variant | &   |     |     | +        | \*      | pmin   |
+| Array variant      | &   |     |     | +        | \*      | N.A.   |
 
-R is very handy and consistent in using 'and', 'or', add, and multiply to between scalar, vector, and arrays. Depending on the input, the output could always return the same dimension.  For example, c(TRUE, TRUE) & c(TRUE, FALSE) returns (TRUE FALS)E, and (boolean matrix) & (boolean matrix) returns a boolean matrix.
+R is very handy and consistent in using 'and', 'or', add, and multiply to between scalar, vector, and arrays. Depending on the input, the output could always return the same dimension. For example, c(TRUE, TRUE) & c(TRUE, FALSE) returns (TRUE FALS)E, and (boolean matrix) & (boolean matrix) returns a boolean matrix.
 
 The naming of reducing cases is distinct from others as it is closer to mathematical terms.
 
@@ -668,7 +949,7 @@ Although not highly consistent, these functions could becom intuitive after fami
 
 Create function amin for smaller in array variant
 
-```{r}
+``` r
 amin <- function(x, y, na.rm = TRUE){
   # get dimension
   if (is.null(dim(x))) xd <- 0 else xd <- dim(x)
@@ -687,11 +968,31 @@ amin <- function(x, y, na.rm = TRUE){
 
 Test function
 
-```{r}
+``` r
 amin(matrix(1:6, nrow = 2), matrix(rep(3,6), nrow = 2))
+```
+
+    ##      [,1] [,2] [,3]
+    ## [1,]    1    3    3
+    ## [2,]    2    3    3
+
+``` r
 amin(matrix(1:6, nrow = 2), matrix(rep(3,9), nrow = 3))
+```
+
+    ##      [,1] [,2] [,3]
+    ## [1,]    1    3    1
+    ## [2,]    2    3    2
+    ## [3,]    3    3    3
+
+``` r
 amin(c(1:6), matrix(rep(3,9), nrow = 3))
 ```
+
+    ##      [,1] [,2] [,3]
+    ## [1,]    1    3    1
+    ## [2,]    2    3    2
+    ## [3,]    3    3    3
 
 The same logic could be applied to create larger in array variant
 
@@ -699,17 +1000,12 @@ The same logic could be applied to create larger in array variant
 
 Fit paste() into the structure
 
-```{r table 2, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
-tabl2 <- "
-|                    |  paste |
+|                    | paste  |
 |--------------------|--------|
 | Binary operator    | paste0 |
-| Reducing variant   |  paste |   
-| Vectorised variant | paste0 | 
-| Array variant      |   N.A. |
-"
-cat(tabl2)
-```
+| Reducing variant   | paste  |
+| Vectorised variant | paste0 |
+| Array variant      | N.A.   |
 
 The sep argument is equivalent to paste one more scalar or vector object between the each pair of the inputs. The collapse argument is equivalent to reducing the result to an output of length 1 or not.
 
@@ -717,7 +1013,7 @@ It seems the array variant doesn't have existing R implementations.
 
 Play around with some examples.
 
-```{r}
+``` r
 a <- paste(1, 2)
 b <- paste(c(1,2), c(3,4))
 b1 <- paste0(c(1,2), c(3,4))
@@ -726,18 +1022,64 @@ c <- paste(matrix(1:4, nrow = 2), matrix(5:8, nrow = 2))
 
 # binary operator with " "
 a
+```
+
+    ## [1] "1 2"
+
+``` r
 length(a)
+```
+
+    ## [1] 1
+
+``` r
 # vectorized variant with " "
 b
+```
+
+    ## [1] "1 3" "2 4"
+
+``` r
 length(b)
+```
+
+    ## [1] 2
+
+``` r
 # vectorized variant without " "
 b1
+```
+
+    ## [1] "13" "24"
+
+``` r
 length(b1)
+```
+
+    ## [1] 2
+
+``` r
 # reducing variant
 b2
+```
+
+    ## [1] "1324"
+
+``` r
 length(b2)
+```
+
+    ## [1] 1
+
+``` r
 # not applicable to array variant
 c
+```
+
+    ## [1] "1 5" "2 6" "3 7" "4 8"
+
+``` r
 dim(c)
 ```
 
+    ## NULL

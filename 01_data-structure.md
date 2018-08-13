@@ -1,15 +1,10 @@
----
-title: "Data Structure"
-author: "Byron Tang"
-date: "May 12, 2018"
-output: github_document
----
+Data Structure
+================
+Byron Tang
+May 12, 2018
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## Vectors
+Vectors
+-------
 
 #### 1. What are the six types of atomic vector? How does a list differ from an atomic vector?
 
@@ -19,75 +14,146 @@ A list could be recursive, which means a list can contain other list, while an a
 
 #### 2. What makes is.vector() and is.numeric() fundamentally different to is.list() and is.character()?
 
-is.vector() does not test if an object is a vector. Instead, it returns TRUE only if the object is a vector with no attributes apart from names. is.vector() would return TRUE even when we pass a list object into it. 
+is.vector() does not test if an object is a vector. Instead, it returns TRUE only if the object is a vector with no attributes apart from names. is.vector() would return TRUE even when we pass a list object into it.
 
 On the other hand, is.list() tests if an object is built on a list structure. is.list() would return TRUE for a list and FALSE for a vector.
 
-To test if an object is an atomic vector, we need to use is.atomic() || is.list(). 
+To test if an object is an atomic vector, we need to use is.atomic() || is.list().
 
-is.numeric() is a general test for the "numberliness" of a vector and returns TRUE for both integer and double vectors. It is not a specific test for double vectors, which are often called numeric. 
+is.numeric() is a general test for the "numberliness" of a vector and returns TRUE for both integer and double vectors. It is not a specific test for double vectors, which are often called numeric.
 
 is.character() simply test if an object is of type character or not.
 
-
 #### 3. Test your knowledge of vector coercion rules by predicting the output of the following uses of c():
 
-```{r}
+``` r
 c(1, FALSE) # double
+```
+
+    ## [1] 1 0
+
+``` r
 c("a", 1) # character
+```
+
+    ## [1] "a" "1"
+
+``` r
 c(list(1), "a") # X: character O: list 
+```
+
+    ## [[1]]
+    ## [1] 1
+    ## 
+    ## [[2]]
+    ## [1] "a"
+
+``` r
 c(TRUE, 1L) # integer
 ```
+
+    ## [1] 1 1
 
 #### 4. Why do you need to use unlist() to convert a list to an atomic vector? Why doesn't as.vector() work?
 
 as.vector() does not convert a list as a list is also a vector.
 
-```{r}
+``` r
 a_list <- list(1, 2, 3)
 unlist(a_list)
+```
+
+    ## [1] 1 2 3
+
+``` r
 as.vector(a_list)
+```
+
+    ## [[1]]
+    ## [1] 1
+    ## 
+    ## [[2]]
+    ## [1] 2
+    ## 
+    ## [[3]]
+    ## [1] 3
+
+``` r
 is.vector(a_list)
 ```
 
-#### 5. Why is 1 == "1" true? Why is -1 < FALSE true? Why is "one" < 2 false?
+    ## [1] TRUE
 
-- 1 is coerced into a character
-- FALSE is coerced to 0
-- 2 is coerced to "2"
+#### 5. Why is 1 == "1" true? Why is -1 &lt; FALSE true? Why is "one" &lt; 2 false?
 
-#### 6. Why is the default missing value, NA, a logical vector? What's special about logical vectors? (Hint: think about c(FALSE, NA_character_).)
+-   1 is coerced into a character
+-   FALSE is coerced to 0
+-   2 is coerced to "2"
+
+#### 6. Why is the default missing value, NA, a logical vector? What's special about logical vectors? (Hint: think about c(FALSE, NA\_character\_).)
 
 A logical datatype could be coerced to anyother data types, including integer, logical, and character.
 
-```{r}
+``` r
 typeof(c(FALSE, NA))
+```
+
+    ## [1] "logical"
+
+``` r
 typeof(c(1L, NA))
+```
+
+    ## [1] "integer"
+
+``` r
 typeof(c(1, NA))
+```
+
+    ## [1] "double"
+
+``` r
 typeof(c("1", NA))
 ```
 
+    ## [1] "character"
+
 R has no scalar types, so NA is created as a logical vector of lengh one.
 
-## Attributes
+Attributes
+----------
 
 Notes
 
-```{r}
+``` r
 y <- 1:10
 attr(y, "my_attribute") <- "This is a vector"
 # y <- structure(1:10, my_attribute = "This is a vector")
 
 attributes(y) # returns a list of attirbutes
+```
+
+    ## $my_attribute
+    ## [1] "This is a vector"
+
+``` r
 str(attributes(y))
+```
+
+    ## List of 1
+    ##  $ my_attribute: chr "This is a vector"
+
+``` r
 is.vector(y)
 ```
+
+    ## [1] FALSE
 
 Note that is.vector() would return FALSE when there's an attribute other than name is attached
 
 #### 1. An early draft used this code to illustrate structure():
 
-```{r eval=FALSE}
+``` r
 structure(1:5, comment = "my attribute")
 ## [1] 1 2 3 4 5
 ```
@@ -96,31 +162,54 @@ structure(1:5, comment = "my attribute")
 
 Use comment() to get the comment attribute
 
-```{r}
+``` r
 comment(structure(1:5, comment = "my attribute"))
 ```
 
+    ## [1] "my attribute"
+
 #### 2. What happens to a factor when you modify its levels?
 
-```{r eval=FALSE}
+``` r
 f1 <- factor(letters)
 levels(f1) <- rev(levels(f1))
 ```
 
 When we modify the levels of a factor, we are fundemantally chaning the category of each integer stored in the factor. For example, if 1 was assigned to a, changing the level a to z would make 1 related to z.
 
-```{r}
+``` r
 e1 <- factor(c("a", "b", "c", "a"))
-levels(e1)
-table(e1)
-levels(e1) <- c("b", "c", "a")
-table(e1)
 levels(e1)
 ```
 
+    ## [1] "a" "b" "c"
+
+``` r
+table(e1)
+```
+
+    ## e1
+    ## a b c 
+    ## 2 1 1
+
+``` r
+levels(e1) <- c("b", "c", "a")
+table(e1)
+```
+
+    ## e1
+    ## b c a 
+    ## 2 1 1
+
+``` r
+levels(e1)
+```
+
+    ## [1] "b" "c" "a"
+
 #### 3. What does this code do? How do f2 and f3 differ from f1?
 
-```{r eval=FALSE}
+``` r
 f2 <- rev(factor(letters))
 f3 <- factor(letters, levels = rev(letters))
 ```
@@ -131,76 +220,165 @@ f3: Assigns the levels starting from z.
 
 In f1, the levels are changed fundemantally, making the integer redirect to different letters. In f2 and f3, neither of the integer were redirected.
 
-## Matrices and arrays
+Matrices and arrays
+-------------------
 
 #### 1. What does dim() return when applied to a vector?
 
-```{r}
+``` r
 dim(c(1, 2, 3))
+```
+
+    ## NULL
+
+``` r
 str(c(1, 2, 3))
 ```
 
+    ##  num [1:3] 1 2 3
+
 #### 2. If is.matrix(x) is TRUE, what will is.array(x) return?
 
-```{r}
+``` r
 is.matrix(matrix(1:6, ncol = 2, nrow = 3))
+```
+
+    ## [1] TRUE
+
+``` r
 is.array(matrix(1:6, ncol = 2, nrow = 3))
 ```
 
+    ## [1] TRUE
+
 #### 3. How would you describe the following three objects? What makes them different to 1:5?
 
-```{r, eval=FALSE}
+``` r
 x1 <- array(1:5, c(1, 1, 5)) 
 x2 <- array(1:5, c(1, 5, 1)) 
 x3 <- array(1:5, c(5, 1, 1)) 
 ```
 
-Run the codes 
+Run the codes
 
-```{r}
+``` r
 x1 <- array(1:5, c(1, 1, 5)) 
 x2 <- array(1:5, c(1, 5, 1)) 
 x3 <- array(1:5, c(5, 1, 1)) 
 ```
 
-```{r}
+``` r
 x1 # contains an array of 5 matrices of 1*1
+```
+
+    ## , , 1
+    ## 
+    ##      [,1]
+    ## [1,]    1
+    ## 
+    ## , , 2
+    ## 
+    ##      [,1]
+    ## [1,]    2
+    ## 
+    ## , , 3
+    ## 
+    ##      [,1]
+    ## [1,]    3
+    ## 
+    ## , , 4
+    ## 
+    ##      [,1]
+    ## [1,]    4
+    ## 
+    ## , , 5
+    ## 
+    ##      [,1]
+    ## [1,]    5
+
+``` r
 x2 # contains an array of 1 matrices of 1*5
+```
+
+    ## , , 1
+    ## 
+    ##      [,1] [,2] [,3] [,4] [,5]
+    ## [1,]    1    2    3    4    5
+
+``` r
 x3 # contains an array of 1 matrices of 5*1
 ```
 
-## Data Frames
+    ## , , 1
+    ## 
+    ##      [,1]
+    ## [1,]    1
+    ## [2,]    2
+    ## [3,]    3
+    ## [4,]    4
+    ## [5,]    5
+
+Data Frames
+-----------
 
 #### 1. What attributes does a data frame possess?
 
-```{r}
+``` r
 attributes(data.frame(a = 1:3, b = c("a", "b", "c")))
 ```
+
+    ## $names
+    ## [1] "a" "b"
+    ## 
+    ## $class
+    ## [1] "data.frame"
+    ## 
+    ## $row.names
+    ## [1] 1 2 3
 
 #### 2. What does as.matrix() do when applied to a data frame with columns of different types?
 
 as.matrix() would coerse different data types
 
-```{r}
+``` r
 as.matrix(data.frame(a = 1:3, b = c("a", "b", "c")))
 ```
+
+    ##      a   b  
+    ## [1,] "1" "a"
+    ## [2,] "2" "b"
+    ## [3,] "3" "c"
 
 #### 3. Can you have a data frame with 0 rows? What about 0 columns?
 
 A data frame with 0 rows
 
-```{r}
+``` r
 a <- data.frame(a = as.numeric(),
                 b = as.character())
 a
+```
+
+    ## [1] a b
+    ## <0 rows> (or 0-length row.names)
+
+``` r
 class(a)
 ```
 
+    ## [1] "data.frame"
+
 A data frame with 0 columns
 
-```{r}
+``` r
 b <- data.frame()
 b
+```
+
+    ## data frame with 0 columns and 0 rows
+
+``` r
 class(b)
 ```
 
+    ## [1] "data.frame"
