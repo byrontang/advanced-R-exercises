@@ -25,7 +25,7 @@ Test function
 logTime("c:/Users/byron/Desktop/FO_ex1.txt", rnorm)(1)
 ```
 
-    ## [1] 1.119812
+    ## [1] -1.050272
 
 1.  What does the following function do? What would be a good name for it?
 
@@ -78,27 +78,27 @@ g1 <- delay_by(3, rnorm)
 g1(1) # Start time
 ```
 
-    ## [1] "2018-08-11 09:43:36 CDT"
+    ## [1] "2018-08-13 08:47:53 CDT"
 
 ``` r
 Sys.sleep(5)
 g1(1) # No elapse
 ```
 
-    ## [1] "2018-08-11 09:43:41 CDT"
+    ## [1] "2018-08-13 08:47:58 CDT"
 
 ``` r
 Sys.sleep(2)
 g1(1) # Elapse for 1 sec
 ```
 
-    ## [1] "2018-08-11 09:43:44 CDT"
+    ## [1] "2018-08-13 08:48:01 CDT"
 
 ``` r
 g1(1) # Elapse for 3 sec
 ```
 
-    ## [1] "2018-08-11 09:43:47 CDT"
+    ## [1] "2018-08-13 08:48:04 CDT"
 
 #### 4. Write wait\_until() which delays execution until a specific time.
 
@@ -126,7 +126,7 @@ wait_until(Sys.time() + 30, rnorm)(1)
 
     ## ...
 
-    ## [1] 2.327258
+    ## [1] 1.768958
 
 #### 5. There are three places we could have added a memoise call: why did we choose the one we did?
 
@@ -161,7 +161,7 @@ The problem in this code is that memory keeps on growing and growing. The operat
 
 Reference and more efficient alternatives:
 
-<https://stat.ethz.ch/pipermail/r-help/2011-August/287303.html>
+-   <https://stat.ethz.ch/pipermail/r-help/2011-August/287303.html>
 
 #### 7. Why does the following code, from stackoverflow, not do what you expect?
 
@@ -327,7 +327,7 @@ dot_every <- function(n, f) {
 download <- dot_every(10, memoise(delay_by(1, download_file)))
 ```
 
-Create new function
+Create function
 
 ``` r
 download_files <- partial(lapply, FUN = download)
@@ -341,9 +341,13 @@ Cons: Need to create download and other functions it uses first.
 
 In short, colwise uses do.call and lapply inside the source code to make a function that operates on a vector operate on a data.frame.
 
-Three main taskes: 1. Filter column by function passed into .cols argument (ex: is.numeric) 2. Keep all columns if no function is passed into .cols argument 3. Apply function on data.frame
+Three main taskes:
 
-implementing each task by partial() with a simplified function
+1.  Filter column by function passed into .cols argument (ex: is.numeric)
+2.  Keep all columns if no function is passed into .cols argument
+3.  Apply function on data.frame
+
+Implementing each task by partial() with a simplified function
 
 ``` r
 colwise2 <- function (.fun, .cols = true) 
@@ -391,7 +395,7 @@ colwise2(nmissing)(mtcars)
 
 #### 3. Write FOs that convert a function to return a matrix instead of a data frame, or a data frame instead of a matrix. If you understand S3, call them as.data.frame.function() and as.matrix.function().
 
-Create function as.data.frame.funciton
+Create function as.data.frame.function
 
 ``` r
 as.data.frame.function <- function(f){
@@ -473,7 +477,7 @@ randomise <- function(f) f(runif(1e3))
 randomise(mean)
 ```
 
-    ## [1] 0.4966723
+    ## [1] 0.4927606
 
 ``` r
 # use partial()
@@ -481,7 +485,7 @@ randomise_p <- partial(runif, 1e3)
 mean(randomise_p())
 ```
 
-    ## [1] 0.4945343
+    ## [1] 0.5014314
 
 Example 2
 
@@ -491,14 +495,14 @@ x <- rcauchy(1000)
 unlist(lapply(trims, function(trim) mean(x, trim = trim)))
 ```
 
-    ## [1] -1.05990930 -0.04009117 -0.04473234 -0.03702786
+    ## [1] -0.55523597  0.07941202  0.06130228  0.05603444
 
 ``` r
 # use partial()
 unlist(lapply(trims, partial(mean, x = x)))
 ```
 
-    ## [1] -1.05990930 -0.04009117 -0.04473234 -0.03702786
+    ## [1] -0.55523597  0.07941202  0.06130228  0.05603444
 
 Example 3
 
@@ -508,14 +512,14 @@ ws <- replicate(5, rpois(10, 5) + 1, simplify = FALSE)
 unlist(Map(function(x, w) weighted.mean(x, w, na.rm = TRUE), xs, ws))
 ```
 
-    ## [1] 0.3945983 0.5546088 0.4229866 0.4200183 0.3455620
+    ## [1] 0.5447220 0.4789897 0.5669736 0.5605270 0.4185606
 
 ``` r
 # use partial
 unlist(Map(partial(weighted.mean, na.rm = TRUE), xs, ws))
 ```
 
-    ## [1] 0.3945983 0.5546088 0.4229866 0.4200183 0.3455620
+    ## [1] 0.5447220 0.4789897 0.5669736 0.5605270 0.4185606
 
 Example 4
 
@@ -549,7 +553,7 @@ system.time(slow_function())
 ```
 
     ##    user  system elapsed 
-    ##       0       0       1
+    ##    0.00    0.00    1.01
 
 ``` r
 # use partial()
@@ -557,7 +561,7 @@ system.time(partial(Sys.sleep, 1)(), 10)
 ```
 
     ##    user  system elapsed 
-    ##       0       0       1
+    ##    0.00    0.00    1.02
 
 Example 6
 
@@ -581,10 +585,10 @@ lapply(args, splat(mean))
     ## [1] NA
     ## 
     ## [[2]]
-    ## [1] 10.4259
+    ## [1] 10.3675
     ## 
     ## [[3]]
-    ## [1] 0.5384837
+    ## [1] 0.4726817
 
 ``` r
 # use partial()
@@ -600,10 +604,10 @@ lapply(args, splat2(mean))
     ## [1] NA
     ## 
     ## [[2]]
-    ## [1] 10.4259
+    ## [1] 10.3675
     ## 
     ## [[3]]
-    ## [1] 0.5384837
+    ## [1] 0.4726817
 
 Combining FOs
 -------------

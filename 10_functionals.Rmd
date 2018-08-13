@@ -372,16 +372,17 @@ The Split-Apply-Combine Strategy for Data Analysis (https://www.jstatsoft.org/ar
 
 #### 1. Why isn't is.na() a predicate function? What base R function is closest to being a predicate version of is.na()?
 
-is.na() doesn't return a single TRUE or FALSE
+is.na() doesn't return TRUE for a vector of NA.
 
 ```{r}
 list_test <-
   list(a = c(1:5),
        b = replicate(5, NA))
-message("")
+list_test
+is.na(list_test)
 ```
 
-To return a single TRUE or FALSE, one option is to combine all() and is.na() from base R functions.
+To return TRUE in this case, one option is to combine all() and is.na() from base R functions.
 
 ```{r}
 sapply(list_test, function(x) all(is.na(x)))
@@ -484,7 +485,8 @@ span(is.numeric, mtcars2[c("qsec", "vs", "am", "gear", "carb")]) # senario 3
 ## Mathematical functionals
 
 Reference for the negative log likelihood (NLL) closure in the lecture:
-https://www.statlect.com/fundamentals-of-statistics/Poisson-distribution-maximum-likelihood
+
+- https://www.statlect.com/fundamentals-of-statistics/Poisson-distribution-maximum-likelihood
 
 #### 1. Implement arg_max(). It should take a function and a vector of inputs, and return the elements of the input where the function returns the highest value. For example, arg_max(-10:5, function(x) x ^ 2) should return -10. arg_max(-5:5, function(x) x ^ 2) should return c(-5, 5). Also implement the matching arg_min() function.
 
@@ -646,16 +648,16 @@ The same logic of creating row_min could be applied to create row_max
 
 ####  c. Complete the matrix by implementing any missing functions.
 
-Base R functions in each role
+Base R functions in each role (Note: In tte table $ represents |. Due to formatting issue, | will be considered as part of table boarders, so I used the symple $ instead.)
 
 ```{r table 1, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
 tabl <- " 
 |                    | And | Or  | Add | Multiply | Smaller | Larger |
 |--------------------|-----|-----|-----|----------|---------|--------|
-| Binary operator    |  &  |  |  |  +  |     *    |   min   |   max  |
+| Binary operator    |  &  |  $  |  +  |     *    |   min   |   max  |
 | Reducing variant   | all | any | sum |   prod   |   min   |   max  |   
-| Vectorised variant |  &  |  |  |  +  |     *    |  pmin   |  pmax  | 
-| Array variant      |  &  |  |  |  +  |     *    |  N.A.   |  N.A.  |
+| Vectorised variant |  &  |  $  |  +  |     *    |  pmin   |  pmax  | 
+| Array variant      |  &  |  $  |  +  |     *    |  N.A.   |  N.A.  |
 "
 cat(tabl)
 ```

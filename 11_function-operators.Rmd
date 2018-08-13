@@ -147,7 +147,7 @@ The problem in this code is that memory keeps on growing and growing. The operat
         
 Reference and more efficient alternatives:
 
-https://stat.ethz.ch/pipermail/r-help/2011-August/287303.html
+- https://stat.ethz.ch/pipermail/r-help/2011-August/287303.html
 
 #### 7. Why does the following code, from stackoverflow, not do what you expect?
 
@@ -278,7 +278,7 @@ dot_every <- function(n, f) {
 download <- dot_every(10, memoise(delay_by(1, download_file)))
 ```
 
-Create new function
+Create function
 
 ```{r}
 download_files <- partial(lapply, FUN = download)
@@ -293,11 +293,12 @@ Cons: Need to create download and other functions it uses first.
 In short, colwise uses do.call and lapply inside the source code to make a function that operates on a vector operate on a data.frame.
 
 Three main taskes: 
+
 1. Filter column by function passed into .cols argument (ex: is.numeric)
 2. Keep all columns if no function is passed into .cols argument
 3. Apply function on data.frame
 
-implementing each task by partial() with a simplified function
+Implementing each task by partial() with a simplified function
 
 ```{r}
 colwise2 <- function (.fun, .cols = true) 
@@ -336,7 +337,7 @@ colwise2(nmissing)(mtcars)
 
 #### 3. Write FOs that convert a function to return a matrix instead of a data frame, or a data frame instead of a matrix. If you understand S3, call them as.data.frame.function() and as.matrix.function().
 
-Create function as.data.frame.funciton
+Create function as.data.frame.function
 
 ```{r}
 as.data.frame.function <- function(f){

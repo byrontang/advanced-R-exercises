@@ -175,11 +175,11 @@ sapply(list_lm3, function(x) round(x$coefficients, 5))
 ```
 
     ##                 [,1]     [,2]     [,3]     [,4]     [,5]     [,6]     [,7]
-    ## (Intercept) 30.14238 28.57313 28.85427 31.12121 27.87905 30.32796 30.34476
-    ## disp        -0.04662 -0.03438 -0.04267 -0.04706 -0.03671 -0.04180 -0.04316
+    ## (Intercept) 27.96573 29.34998 29.53801 26.23053 29.87379 27.94500 28.51878
+    ## disp        -0.03458 -0.03769 -0.04128 -0.03068 -0.04129 -0.03451 -0.03560
     ##                 [,8]     [,9]    [,10]
-    ## (Intercept) 30.16640 30.49615 30.10447
-    ## disp        -0.04073 -0.04450 -0.04678
+    ## (Intercept) 28.69462 28.96864 29.86374
+    ## disp        -0.03763 -0.04165 -0.04148
 
 Combine all steps into one lapply() function. However, it's unavoidable to use an anonymous function.
 
@@ -193,11 +193,11 @@ sapply(list_lm4, function(x) round(x$coefficients, 5))
 ```
 
     ##                 [,1]     [,2]     [,3]     [,4]     [,5]     [,6]     [,7]
-    ## (Intercept) 27.82366 30.40174 30.21161 27.88662 29.74847 29.55832 27.93028
-    ## disp        -0.03383 -0.04133 -0.04396 -0.03612 -0.04205 -0.03949 -0.03572
+    ## (Intercept) 29.48285 29.49264 27.21547 31.21840 29.75826 30.84000 30.48726
+    ## disp        -0.04152 -0.04202 -0.03279 -0.05051 -0.04006 -0.04462 -0.04424
     ##                 [,8]     [,9]    [,10]
-    ## (Intercept) 29.38898 29.05849 28.88539
-    ## disp        -0.04361 -0.03788 -0.03752
+    ## (Intercept) 28.20926 32.17073 28.86385
+    ## disp        -0.03736 -0.04769 -0.03870
 
 #### 5. For each model in the previous two exercises, extract R2 using the function below.
 
@@ -224,15 +224,15 @@ sapply(list_lm2, rsq)
 sapply(list_lm3, rsq)
 ```
 
-    ##  [1] 0.8288491 0.6558208 0.6876203 0.6677552 0.7387817 0.6791875 0.7233880
-    ##  [8] 0.7086177 0.7484268 0.7742689
+    ##  [1] 0.6391799 0.6307274 0.7367568 0.6918010 0.6669969 0.6338306 0.7260885
+    ##  [8] 0.7587076 0.8115654 0.7046415
 
 ``` r
 sapply(list_lm4, rsq)
 ```
 
-    ##  [1] 0.6570449 0.6593197 0.7182210 0.7586289 0.7763307 0.6888070 0.6699989
-    ##  [8] 0.7648373 0.6858969 0.6656067
+    ##  [1] 0.8113400 0.6551340 0.6872138 0.7202997 0.7762047 0.7566495 0.7542395
+    ##  [8] 0.6912865 0.7917928 0.6690644
 
 For loop funcitonals: friends of lapply()
 -----------------------------------------
@@ -267,7 +267,7 @@ vapply(mtcars[, vapply(mtcars2, is.numeric, logical(1))], sd, numeric(1))
 
 #### 2. Why is using sapply() to get the class() of each element in a data frame dangerous?
 
-The elements in a data frame might not have only one class. When any one of the element has more than one class, sapply would return a list instead of a vector. It might error out thefollowing process or function without clear message if the expected output is a vector.
+The elements in a data frame might not have only one class. When any one of the element has more than one class, sapply would return a list instead of a vector. It might error out the following process or function without clear message if the expected output is a vector.
 
 #### 3. The following code simulates the performance of a t-test for non-normal data. Use sapply() and an anonymous function to extract the p-value from every trial.
 
@@ -296,16 +296,16 @@ trials <- replicate(
 head(sapply(trials, function(x) x$p.value), 10)
 ```
 
-    ##  [1] 0.3193226 0.1616558 0.2549801 0.0538109 0.8743267 0.1473575 0.4074743
-    ##  [8] 0.1587665 0.5677774 0.5493095
+    ##  [1] 0.69125482 0.38926427 0.79092135 0.38346405 0.22875840 0.97854737
+    ##  [7] 0.19221509 0.17662746 0.70092791 0.03548995
 
 ``` r
 # use [[
 head(unlist(Map(`[[`, trials, "p.value")), 10)
 ```
 
-    ##  [1] 0.3193226 0.1616558 0.2549801 0.0538109 0.8743267 0.1473575 0.4074743
-    ##  [8] 0.1587665 0.5677774 0.5493095
+    ##  [1] 0.69125482 0.38926427 0.79092135 0.38346405 0.22875840 0.97854737
+    ##  [7] 0.19221509 0.17662746 0.70092791 0.03548995
 
 #### 4. What does replicate() do? What sort of for loop does it eliminate? Why do its arguments differ from lapply() and friends?
 
@@ -337,13 +337,13 @@ Test function and check with Map()
 unlist(lapply2(xs, ws, weighted.mean))
 ```
 
-    ## [1] 0.3997142 0.5030178 0.3455365 0.6181193 0.5967283
+    ## [1] 0.3933382 0.3575627 0.2974574 0.5799151 0.6796087
 
 ``` r
 unlist(Map(weighted.mean, xs, ws))
 ```
 
-    ## [1] 0.3997142 0.5030178 0.3455365 0.6181193 0.5967283
+    ## [1] 0.3933382 0.3575627 0.2974574 0.5799151 0.6796087
 
 #### 6. Implement a combination of Map() and vapply() to create an lapply() variant that iterates in parallel over all of its inputs and stores its outputs in a vector (or a matrix). What arguments should the function take?
 
@@ -367,7 +367,7 @@ Test function (mc.core must be exactly 1 on Windows (which uses the master proce
 lapply3(xs, ws, f = weighted.mean, mc.cores = 1L, FUN.VALUE = numeric(1))
 ```
 
-    ## [1] 0.3997142 0.5030178 0.3455365 0.6181193 0.5967283
+    ## [1] 0.3933382 0.3575627 0.2974574 0.5799151 0.6796087
 
 #### 7. Implement mcsapply(), a multicore version of sapply(). Can you implement mcvapply(), a parallel version of vapply()? Why or why not?
 
@@ -514,10 +514,10 @@ split2(pulse, group)
 ```
 
     ## $A
-    ##  [1] 69 70 78 70 65 74 68 73 68 70
+    ##  [1] 73 74 71 69 67 76 73 70 72 73
     ## 
     ## $B
-    ##  [1] 69 79 83 75 76 77 77 74 78 70 79 74
+    ##  [1] 72 72 77 75 75 74 74 76 77 76 73 72
 
 #### 4. What other types of input and output are missing? Brainstorm before you look up some answers in the plyr paper.
 
@@ -532,18 +532,29 @@ Manipulating lists
 
 #### 1. Why isn't is.na() a predicate function? What base R function is closest to being a predicate version of is.na()?
 
-is.na() doesn't return a single TRUE or FALSE
+is.na() doesn't return TRUE for a vector of NA.
 
 ``` r
 list_test <-
   list(a = c(1:5),
        b = replicate(5, NA))
-message("")
+list_test
 ```
 
+    ## $a
+    ## [1] 1 2 3 4 5
     ## 
+    ## $b
+    ## [1] NA NA NA NA NA
 
-To return a single TRUE or FALSE, one option is to combine all() and is.na() from base R functions.
+``` r
+is.na(list_test)
+```
+
+    ##     a     b 
+    ## FALSE FALSE
+
+To return TRUE in this case, one option is to combine all() and is.na() from base R functions.
 
 ``` r
 sapply(list_test, function(x) all(is.na(x)))
@@ -694,7 +705,9 @@ span(is.numeric, mtcars2[c("qsec", "vs", "am", "gear", "carb")]) # senario 3
 Mathematical functionals
 ------------------------
 
-Reference for the negative log likelihood (NLL) closure in the lecture: <https://www.statlect.com/fundamentals-of-statistics/Poisson-distribution-maximum-likelihood>
+Reference for the negative log likelihood (NLL) closure in the lecture:
+
+-   <https://www.statlect.com/fundamentals-of-statistics/Poisson-distribution-maximum-likelihood>
 
 #### 1. Implement arg\_max(). It should take a function and a vector of inputs, and return the elements of the input where the function returns the highest value. For example, arg\_max(-10:5, function(x) x ^ 2) should return -10. arg\_max(-5:5, function(x) x ^ 2) should return c(-5, 5). Also implement the matching arg\_min() function.
 
@@ -932,14 +945,14 @@ The same logic of creating row\_min could be applied to create row\_max
 
 #### c. Complete the matrix by implementing any missing functions.
 
-Base R functions in each role
+Base R functions in each role (Note: In tte table $ represents |. Due to formatting issue, | will be considered as part of table boarders, so I used the symple $ instead.)
 
 |                    | And | Or  | Add | Multiply | Smaller | Larger |
 |--------------------|-----|-----|-----|----------|---------|--------|
-| Binary operator    | &   |     |     | +        | \*      | min    |
+| Binary operator    | &   | $   | +   | \*       | min     | max    |
 | Reducing variant   | all | any | sum | prod     | min     | max    |
-| Vectorised variant | &   |     |     | +        | \*      | pmin   |
-| Array variant      | &   |     |     | +        | \*      | N.A.   |
+| Vectorised variant | &   | $   | +   | \*       | pmin    | pmax   |
+| Array variant      | &   | $   | +   | \*       | N.A.    | N.A.   |
 
 R is very handy and consistent in using 'and', 'or', add, and multiply to between scalar, vector, and arrays. Depending on the input, the output could always return the same dimension. For example, c(TRUE, TRUE) & c(TRUE, FALSE) returns (TRUE FALS)E, and (boolean matrix) & (boolean matrix) returns a boolean matrix.
 
