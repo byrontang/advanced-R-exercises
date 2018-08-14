@@ -25,7 +25,7 @@ Test function
 logTime("c:/Users/byron/Desktop/FO_ex1.txt", rnorm)(1)
 ```
 
-    ## [1] -1.050272
+    ## [1] -0.05558952
 
 1.  What does the following function do? What would be a good name for it?
 
@@ -78,27 +78,27 @@ g1 <- delay_by(3, rnorm)
 g1(1) # Start time
 ```
 
-    ## [1] "2018-08-13 08:47:53 CDT"
+    ## [1] "2018-08-13 20:03:23 CDT"
 
 ``` r
 Sys.sleep(5)
 g1(1) # No elapse
 ```
 
-    ## [1] "2018-08-13 08:47:58 CDT"
+    ## [1] "2018-08-13 20:03:28 CDT"
 
 ``` r
 Sys.sleep(2)
 g1(1) # Elapse for 1 sec
 ```
 
-    ## [1] "2018-08-13 08:48:01 CDT"
+    ## [1] "2018-08-13 20:03:31 CDT"
 
 ``` r
 g1(1) # Elapse for 3 sec
 ```
 
-    ## [1] "2018-08-13 08:48:04 CDT"
+    ## [1] "2018-08-13 20:03:34 CDT"
 
 #### 4. Write wait\_until() which delays execution until a specific time.
 
@@ -126,7 +126,7 @@ wait_until(Sys.time() + 30, rnorm)(1)
 
     ## ...
 
-    ## [1] 1.768958
+    ## [1] 0.5531125
 
 #### 5. There are three places we could have added a memoise call: why did we choose the one we did?
 
@@ -441,7 +441,8 @@ as.matrix.function(data.frame)(a = c(1:3), b = letters[1:3])
 1.  Negate
 2.  failwith
 3.  capture\_it
-4.  time\_it 5, evaluate\_it
+4.  time\_it
+5.  evaluate\_it
 
 Combinations of types of outputs
 
@@ -477,7 +478,7 @@ randomise <- function(f) f(runif(1e3))
 randomise(mean)
 ```
 
-    ## [1] 0.4927606
+    ## [1] 0.5012056
 
 ``` r
 # use partial()
@@ -485,7 +486,7 @@ randomise_p <- partial(runif, 1e3)
 mean(randomise_p())
 ```
 
-    ## [1] 0.5014314
+    ## [1] 0.4930654
 
 Example 2
 
@@ -495,14 +496,14 @@ x <- rcauchy(1000)
 unlist(lapply(trims, function(trim) mean(x, trim = trim)))
 ```
 
-    ## [1] -0.55523597  0.07941202  0.06130228  0.05603444
+    ## [1] 26.50774660  0.10617783  0.09877357  0.08332523
 
 ``` r
 # use partial()
 unlist(lapply(trims, partial(mean, x = x)))
 ```
 
-    ## [1] -0.55523597  0.07941202  0.06130228  0.05603444
+    ## [1] 26.50774660  0.10617783  0.09877357  0.08332523
 
 Example 3
 
@@ -512,14 +513,14 @@ ws <- replicate(5, rpois(10, 5) + 1, simplify = FALSE)
 unlist(Map(function(x, w) weighted.mean(x, w, na.rm = TRUE), xs, ws))
 ```
 
-    ## [1] 0.5447220 0.4789897 0.5669736 0.5605270 0.4185606
+    ## [1] 0.3778692 0.3966255 0.5871824 0.6063078 0.3716678
 
 ``` r
 # use partial
 unlist(Map(partial(weighted.mean, na.rm = TRUE), xs, ws))
 ```
 
-    ## [1] 0.5447220 0.4789897 0.5669736 0.5605270 0.4185606
+    ## [1] 0.3778692 0.3966255 0.5871824 0.6063078 0.3716678
 
 Example 4
 
@@ -553,7 +554,7 @@ system.time(slow_function())
 ```
 
     ##    user  system elapsed 
-    ##    0.00    0.00    1.01
+    ##    0.00    0.00    1.02
 
 ``` r
 # use partial()
@@ -561,7 +562,7 @@ system.time(partial(Sys.sleep, 1)(), 10)
 ```
 
     ##    user  system elapsed 
-    ##    0.00    0.00    1.02
+    ##    0.00    0.00    1.03
 
 Example 6
 
@@ -585,10 +586,10 @@ lapply(args, splat(mean))
     ## [1] NA
     ## 
     ## [[2]]
-    ## [1] 10.3675
+    ## [1] 10.40006
     ## 
     ## [[3]]
-    ## [1] 0.4726817
+    ## [1] 0.5087269
 
 ``` r
 # use partial()
@@ -604,10 +605,10 @@ lapply(args, splat2(mean))
     ## [1] NA
     ## 
     ## [[2]]
-    ## [1] 10.3675
+    ## [1] 10.40006
     ## 
     ## [[3]]
-    ## [1] 0.4726817
+    ## [1] 0.5087269
 
 Combining FOs
 -------------

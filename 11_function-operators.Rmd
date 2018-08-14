@@ -373,12 +373,12 @@ as.matrix.function(data.frame)(a = c(1:3), b = letters[1:3])
 2. failwith 
 3. capture_it 
 4. time_it
-5, evaluate_it
+5. evaluate_it
 
 Combinations of types of outputs
 
 ```{r table, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
-tabl <- "#
+tabl <- "
 |              | Other values |   String    |
 |--------------|--------------|-------------|
 | Boolean      |    Negate    |             |
