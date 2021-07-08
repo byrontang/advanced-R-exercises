@@ -41,7 +41,7 @@ c(TRUE, 1L) # integer
 
 #### 4. Why do you need to use unlist() to convert a list to an atomic vector? Why doesn't as.vector() work?
 
-as.vector() does not convert a list as a list is also a vector.
+as.vector() does not convert a list to a vector because a list is also a vector.
 
 ```{r}
 a_list <- list(1, 2, 3)
@@ -58,7 +58,7 @@ is.vector(a_list)
 
 #### 6. Why is the default missing value, NA, a logical vector? What's special about logical vectors? (Hint: think about c(FALSE, NA_character_).)
 
-A logical datatype could be coerced to anyother data types, including integer, logical, and character.
+A logical datatype could be coerced to any other data types, including integer, logical, and character.
 
 ```{r}
 typeof(c(FALSE, NA))
@@ -71,7 +71,9 @@ R has no scalar types, so NA is created as a logical vector of lengh one.
 
 ## Attributes
 
-Notes
+Notes:
+- Use `attr()` to assign an attribute
+- Use `attributes()` or `str(attributes())` to return attributes
 
 ```{r}
 y <- 1:10
@@ -164,9 +166,9 @@ x3 <- array(1:5, c(5, 1, 1))
 ```
 
 ```{r}
-x1 # contains an array of 5 matrices of 1*1
-x2 # contains an array of 1 matrices of 1*5
-x3 # contains an array of 1 matrices of 5*1
+x1 # x1 is 3-dimensional array that contains 5 1*1 matrices 
+x2 # x2 is 3-dimensional array that contains 1 1*5 matrices 
+x3 # x3 is 3-dimensional array that contains 1 5*1 matrices 
 ```
 
 ## Data Frames
