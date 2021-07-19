@@ -119,11 +119,26 @@ Notes: Lookup tables
 ```{r}
 x <- c("m", "f", "u", "f", "f", "m", "m")
 lookup <- c(m = "Male", f = "Female", u = NA)
+# Use case: when the transformation only involves one vector
+# Create a new vector by indexing with the target vector - no function needed
 lookup[x]
 ```
 
 ```{r}
+lookup
+```
+
+```{r}
+lookup['m']
+```
+
+```{r}
 unname(lookup[x])
+```
+
+```{r}
+# the new vector is coerced into character type
+typeof(unname(lookup[x]))
 ```
 
 Notes: Matching and merging
@@ -137,13 +152,14 @@ info <- data.frame(
   fail = c(F, F, T)
 )
 
-# Use match
+# Use case: when the transformation involves more than one vector
+# Use match fucntion to create a new dataframe with the target vector
 id <- match(grades, info$grade)
 info[id, ]
 ```
 
 ```{r}
-# Using rownames
+# Using rownames - this method doesn't use target vector and is only available when target vector matches the value in the column
 rownames(info) <- info$grade
 info[as.character(grades), ]
 ```
