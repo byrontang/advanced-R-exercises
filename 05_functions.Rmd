@@ -40,11 +40,22 @@ funs <- Filter(is.function, objs) # 1207 functions
 
 a
 
+`formals` returns the formal argument list of the function specified. To use formal, passing the function or the string/name of the function.
+
+```{r}
+formals("sapply")
+```
+
+```{r}
+formals(sapply)
+```
+
 ```{r}
 funs_arg <- sapply(lapply(names(funs), formals), length)
 (most_arg <- names(funs[funs_arg == max(funs_arg)]))
 length(formals(most_arg))
 ```
+
 
 b: Most of the functions wihtout arguments are primitive
 
@@ -59,6 +70,7 @@ c: 183 primitive functions
 
 ```{r}
 funs_primitive <- Filter(is.primitive, objs)
+length(funs_primitive)
 ```
 
 #### 3. What are the three important components of a function?
@@ -153,6 +165,8 @@ cor(x, y, use = "pairwise.complete.obs", method = "kendall")
 
 
 #### 2. What does this function return? Why? Which principle does it illustrate?
+
+Note that we don't need to put a "return" at the end of the function. The function will return the last value in the body.
 
 ```{r eval=FALSE}
 f1 <- function(x = {y <- 1; 2}, y = 0) {
